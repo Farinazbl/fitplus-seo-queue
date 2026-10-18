@@ -9,7 +9,7 @@ photos/index.json. Already-downloaded ids are skipped.
 import json, os, time, urllib.parse, urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PER_QUERY = 4
+PER_QUERY = 5
 UA = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124 Safari/537.36',
       'Accept': 'application/json'}
 
@@ -32,14 +32,17 @@ def main():
             url = ('https://api.openverse.org/v1/images/?' + urllib.parse.urlencode(
                 {'q': q, 'license_type': 'commercial,modification', 'source': 'stocksnap,nappy,rawpixel',
                  'aspect_ratio': 'wide', 'size': 'large', 'page_size': 20, 'mature': 'false'}))
-            try:
-                res = get(url)['results']
-            except Exception as e:
-                print('search failed', q, repr(e)[:300])
+            res = None
+            for attempt in range(3):
                 try:
-                    print('body', e.read()[:300])
-                except Exception:
-                    pass
+                    res = get(url)['results']
+                    break
+                except Exception as e:
+                    err = e
+                    time.sleep(4)
+            if res is None:
+                e = err
+                print('search failed', q, repr(e)[:300])
                 continue
             print('search', q, len(res))
             n = 0

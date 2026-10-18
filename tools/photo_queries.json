@@ -1,9 +1,9 @@
 {
- "workout": ["gym workout dark", "woman strength training gym", "man dumbbell workout", "fitness training cinematic"],
- "home-workout": ["home workout living room", "yoga mat exercise at home", "bodyweight exercise home"],
- "fat-loss": ["running outdoor fitness", "abs core workout", "weight loss fitness woman", "jump rope workout"],
- "nutrition": ["healthy meal prep", "healthy breakfast bowl", "salad healthy food top view", "protein food chicken vegetables"],
- "cardio": ["treadmill running gym", "cycling fitness", "runner sunrise"],
- "recovery": ["stretching after workout", "sleep rest healthy", "water bottle fitness hydration"],
- "app": ["fitness app smartphone", "woman checking phone gym", "personal trainer client"]
+ "workout": ["gym", "dumbbell", "weightlifting", "barbell", "fitness woman", "gym training"],
+ "home-workout": ["push up", "plank exercise", "squat exercise", "yoga", "exercise mat"],
+ "fat-loss": ["abs", "running", "jogging", "fitness"],
+ "nutrition": ["salad", "healthy food", "vegetables", "meal prep", "smoothie"],
+ "cardio": ["runner", "jump rope", "treadmill"],
+ "recovery": ["stretching", "water bottle", "meditation"],
+ "app": ["smartphone fitness", "woman phone", "personal trainer"]
 }
