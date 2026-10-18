@@ -35,19 +35,45 @@ LOGO_SVG = ('<svg width="54" height="18" viewBox="120 360 930 300" aria-hidden="
 
 
 def top_banner(bg=None):
-    bg = bg or BANNER_BG
-    return ('<!--fp-top--><style>@media(max-width:600px){.fp-top{min-height:64px!important}.fp-top .fp-ph{display:none}'
-            '.fp-top .fp-in{padding:10px 12px!important;flex-wrap:nowrap!important;gap:8px!important}.fp-top b{font-size:.86em!important}'
-            '.fp-top .fp-sub{font-size:.72em!important}.fp-top .fp-btn{padding:7px 12px!important;font-size:.78em!important}.fp-top svg{width:40px}}</style>'
-            '<a class="fp-top" href="https://web.fitplusapp.com/" style="display:flex;direction:rtl;min-height:96px;margin:0 0 22px;'
-            'border-radius:16px;overflow:hidden;text-decoration:none;background:#140A9A">'
-            '<span class="fp-in" style="flex:1 1 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 20px">'
-            '<span style="display:flex;align-items:center;gap:14px">' + LOGO_SVG +
+    """Slim, photo-free FitPlus banner (brand navy, logo, one line, button)."""
+    deco = LOGO_SVG.replace('width="54" height="18"', 'width="260" height="84"').replace(
+        'style="flex:none"', 'style="position:absolute;left:-30px;top:50%;transform:translateY(-50%);opacity:.13"')
+    return ('<!--fp-top--><style>.fp-top{position:relative}.fp-top:hover .fp-btn{transform:translateX(-3px)}'
+            '@media(max-width:600px){.fp-top{min-height:64px!important}.fp-top .fp-in{padding:10px 14px!important;gap:10px!important}'
+            '.fp-top b{font-size:.86em!important}.fp-top .fp-sub{display:none}.fp-top .fp-btn{padding:7px 14px!important;font-size:.78em!important}'
+            '.fp-top .fp-logo{width:38px}}</style>'
+            '<a class="fp-top" href="https://web.fitplusapp.com/" style="display:block;min-height:88px;margin:0 0 24px;border-radius:16px;'
+            'overflow:hidden;text-decoration:none;background:radial-gradient(120% 140% at 0% 50%,#3524D6 0%,#140A9A 52%,#0E0770 100%);'
+            'box-shadow:0 10px 30px rgba(20,10,154,.22)">' + deco +
+            '<span class="fp-in" style="position:relative;display:flex;direction:rtl;align-items:center;justify-content:space-between;gap:16px;padding:16px 22px">'
+            '<span style="display:flex;align-items:center;gap:14px">' + LOGO_SVG.replace('style="flex:none"', 'class="fp-logo" style="flex:none"') +
             '<span style="display:block;line-height:1.7"><b style="display:block;font-size:1.05em;color:#fff">برنامه ورزشی و غذایی مخصوص بدن خودت</b>'
-            '<span class="fp-sub" style="font-size:.86em;color:#D4CCFF">آنالیز رایگان بدن در فیت‌پلاس</span></span></span>'
-            '<span class="fp-btn" style="flex:none;background:#fff;color:#140A9A;font-weight:700;font-size:.92em;padding:9px 22px;border-radius:999px">شروع رایگان ←</span></span>'
-            '<span class="fp-ph" style="flex:0 0 26%;max-width:260px;background:url(' + bg + ') center/cover no-repeat;'
-            '-webkit-mask-image:linear-gradient(to right,#000 55%,transparent);mask-image:linear-gradient(to right,#000 55%,transparent)"></span></a>')
+            '<span class="fp-sub" style="display:block;font-size:.86em;color:#CFC8FF">آنالیز رایگان بدن، برنامه اختصاصی در چند دقیقه</span></span></span>'
+            '<span class="fp-btn" style="flex:none;background:#fff;color:#140A9A;font-weight:700;font-size:.92em;padding:9px 22px;border-radius:999px;'
+            'transition:transform .2s">شروع رایگان ←</span></span></a>')
+
+
+MORE_JS = (  # no "&&": WordPress texturizes it inside post content
+    "(function(){var gs=document.querySelectorAll('.fp-more-grid:not([data-done])');if(!gs.length)return;"
+           "gs.forEach(function(g){g.setAttribute('data-done','1')});var here=location.pathname.replace(/\\/$/,'');"
+           "fetch('/wp-json/wp/v2/posts?per_page=8'+String.fromCharCode(38)+'_embed=wp:featuredmedia').then(function(r){return r.json()}).then(function(ps){"
+           "var h='';ps.filter(function(p){return here.length<2||p.link.replace(/\\/$/,'').slice(-here.length)!==here}).slice(0,6).forEach(function(p){"
+           "var e=p._embedded||{},m=(e['wp:featuredmedia']||[])[0]||{},z=(m.media_details||{}).sizes||{},"
+           "u=(z.medium_large||z.large||{}).source_url||m.source_url||'';"
+           "h+='<a class=\"fp-mc\" href=\"'+p.link+'\"><span class=\"fp-mi\" style=\"background-image:url('+u+')\"></span>'"
+           "+'<span class=\"fp-mt\">'+p.title.rendered+'</span></a>'});gs.forEach(function(g){g.innerHTML=h})})})();")
+
+
+def more_articles():
+    """'Other FitPlus articles' section: live list of the latest posts (always up to date)."""
+    return ('<!--fp-more--><style>.fp-more{margin:40px 0 10px;direction:rtl}.fp-more h2{font-size:1.35em;color:#14122B;margin:0 0 16px;'
+            'padding-bottom:10px;border-bottom:3px solid #EDE7FF}.fp-more-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}'
+            '.fp-mc{display:block;border-radius:14px;overflow:hidden;background:#fff;border:1px solid #ECEAF5;text-decoration:none!important;'
+            'transition:transform .2s,box-shadow .2s}.fp-mc:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(20,10,154,.12)}'
+            '.fp-mi{display:block;aspect-ratio:16/9;background:#EEE center/cover no-repeat}.fp-mt{display:block;padding:10px 12px 14px;'
+            'color:#14122B;font-weight:700;font-size:.92em;line-height:1.8}@media(max-width:700px){.fp-more-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}'
+            '.fp-mt{font-size:.82em;padding:8px 10px 10px}}</style><div class="fp-more"><h2>مقالات دیگر فیت‌پلاس</h2>'
+            '<div class="fp-more-grid"></div></div><script>' + MORE_JS + '</script><!--/fp-more-->')
 
 
 def style(s, mid_sentence):
@@ -93,7 +119,7 @@ def style(s, mid_sentence):
            % mid_sentence)
     i = s.index('</p>') + 4
     s = s[:i] + top + s[i:]
-    s = top_banner() + s
+    s = top_banner() + s + more_articles()
     hs = [m.start() for m in re.finditer(r'<h2 ', s)]
     if hs:
         k = hs[len(hs) // 2]
