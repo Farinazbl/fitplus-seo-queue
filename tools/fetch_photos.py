@@ -34,7 +34,11 @@ def main():
             try:
                 res = get(url)['results']
             except Exception as e:
-                print('search failed', q, e)
+                print('search failed', q, repr(e)[:300])
+                try:
+                    print('body', e.read()[:300])
+                except Exception:
+                    pass
                 continue
             n = 0
             for p in res:
@@ -63,4 +67,14 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    import io, sys
+    buf = io.StringIO()
+    class T:
+        def write(self, x): sys.__stdout__.write(x); buf.write(x)
+        def flush(self): pass
+    sys.stdout = T()
+    try:
+        main()
+    finally:
+        os.makedirs(os.path.join(ROOT, 'photos'), exist_ok=True)
+        open(os.path.join(ROOT, 'photos', 'fetch_log.txt'), 'w').write(buf.getvalue())
