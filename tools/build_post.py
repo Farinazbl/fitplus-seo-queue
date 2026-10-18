@@ -27,19 +27,24 @@ THEMES = {
 }
 
 
-BANNER_BG = 'https://fitplusapp.com/wp-content/uploads/fp-top-banner.jpg'
+BANNER_BG = 'https://fitplusapp.com/wp-content/uploads/fp-banner-photo.jpg'
+LOGO_SVG = ('<svg width="54" height="18" viewBox="120 360 930 300" aria-hidden="true" style="flex:none">'
+            '<rect x="133" y="450" width="62" height="102" rx="6" fill="#9C8BFF"/><rect x="221" y="369" width="98" height="265" rx="6" fill="#fff"/>'
+            '<path d="M370 436q0-8 8-8h70q8 0 8 8A128 137 0 0 0 712 436q0-8 8-8h72q8 0 8 8A215 219 0 0 1 370 436Z" fill="#fff"/>'
+            '<rect x="851" y="369" width="98" height="265" rx="6" fill="#fff"/><rect x="976" y="450" width="62" height="102" rx="6" fill="#9C8BFF"/></svg>')
 
 
-def top_banner():
-    return ('<!--fp-top--><a href="https://web.fitplusapp.com/" style="display:block;text-decoration:none;margin:0 0 22px;'
-            'border-radius:16px;overflow:hidden;background:#1E1B4B url(%s) left center/cover no-repeat">'
-            '<span style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;'
-            'padding:16px 22px;background:linear-gradient(to left,#1E1B4B 0%%,#1E1B4BEE 48%%,#1E1B4B00 85%%)">'
-            '<span style="display:block;color:#fff;line-height:1.7">'
-            '<b style="display:block;font-size:1.08em;color:#fff">برنامه ورزشی و غذایی مخصوص بدن خودت</b>'
-            '<span style="font-size:.88em;color:#C7C2F0">آنالیز رایگان بدن در فیت‌پلاس</span></span>'
-            '<span style="background:#fff;color:#1E1B4B;font-weight:700;font-size:.92em;padding:8px 20px;border-radius:999px;'
-            'white-space:nowrap">شروع رایگان ←</span></span></a>' % BANNER_BG)
+def top_banner(bg=None):
+    bg = bg or BANNER_BG
+    return ('<!--fp-top--><a href="https://web.fitplusapp.com/" style="display:flex;direction:rtl;min-height:96px;margin:0 0 22px;'
+            'border-radius:16px;overflow:hidden;text-decoration:none;background:#140A9A">'
+            '<span style="flex:1 1 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 20px">'
+            '<span style="display:flex;align-items:center;gap:14px">' + LOGO_SVG +
+            '<span style="display:block;line-height:1.7"><b style="display:block;font-size:1.05em;color:#fff">برنامه ورزشی و غذایی مخصوص بدن خودت</b>'
+            '<span style="font-size:.86em;color:#D4CCFF">آنالیز رایگان بدن در فیت‌پلاس</span></span></span>'
+            '<span style="flex:none;background:#fff;color:#140A9A;font-weight:700;font-size:.92em;padding:9px 22px;border-radius:999px">شروع رایگان ←</span></span>'
+            '<span style="flex:0 0 26%;max-width:260px;background:url(' + bg + ') center/cover no-repeat;'
+            '-webkit-mask-image:linear-gradient(to right,#000 55%,transparent);mask-image:linear-gradient(to right,#000 55%,transparent)"></span></a>')
 
 
 def style(s, mid_sentence):
@@ -171,7 +176,7 @@ def render_photo(topic, out_path, photo=None):
     im = Image.composite(Image.new('RGB', (W, H), (10, 8, 28)), im, shade.convert('L'))
     badge = Image.open(os.path.join(ROOT, 'tools', 'badge.png')).convert('RGBA')
     badge = badge.resize((badge.width * 3 // 2, badge.height * 3 // 2), Image.LANCZOS)
-    im.paste(badge, (64, H - badge.height - 56), badge)
+    im.paste(badge, (72, H - badge.height - 64), badge)
     im.save(out_path, 'JPEG', quality=88, optimize=True, progressive=True)
     return rel
 
