@@ -27,7 +27,7 @@ THEMES = {
 }
 
 
-BANNER_BG = 'https://fitplusapp.com/wp-content/uploads/fp-banner-photo.jpg'
+BANNER_BG = 'https://fitplusapp.com/wp-content/uploads/2026/10/fp-banner-photo.jpg'
 LOGO_SVG = ('<svg width="54" height="18" viewBox="120 360 930 300" aria-hidden="true" style="flex:none">'
             '<rect x="133" y="450" width="62" height="102" rx="6" fill="#9C8BFF"/><rect x="221" y="369" width="98" height="265" rx="6" fill="#fff"/>'
             '<path d="M370 436q0-8 8-8h70q8 0 8 8A128 137 0 0 0 712 436q0-8 8-8h72q8 0 8 8A215 219 0 0 1 370 436Z" fill="#fff"/>'
