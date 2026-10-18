@@ -197,7 +197,7 @@ def main(path):
             'rank_title': a.get('rank_title', a['title']), 'rank_description': a['excerpt'],
             'focus_keyword': a.get('focus_keyword', ''), 'image': img_name, 'alt': a.get('alt', a['title'])}
     json.dump(post, open(os.path.join(d, 'post.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
-    print('queued', d, 'ctas=%d' % content.count('web.fitplusapp.com'), 'zwnj=%d' % content.count(ZW))
+    print('queued', d, 'ctas=%d' % (content.count('web.fitplusapp.com') - content.count('<!--fp-top-->')), 'banner=%d' % content.count('<!--fp-top-->'), 'zwnj=%d' % content.count(ZW))
 
 
 if __name__ == '__main__':
