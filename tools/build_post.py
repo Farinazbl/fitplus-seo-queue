@@ -9,7 +9,9 @@ article.json keys:
              CTA <p>در <strong>فیت‌پلاس</strong>، ... <a href="https://web.fitplusapp.com/">..</a>.</p>,
              FAQ + FAQPage JSON-LD),
   mid_cta (one persuasive sentence for the middle CTA banner),
-  image: {theme, kicker, title, sub, cards:[[fact,label]x3]}
+  photo_topic: one of workout|home-workout|fat-loss|nutrition|cardio|recovery|app  (preferred:
+             real photo hero like Digikala Mag; only photos in photos/approved.json are used)
+  image: {theme, kicker, title, sub, cards:[[fact,label]x3]}  (legacy graphic, used only if no photo_topic)
 Writes queue/<slug>/post.json + queue/<slug>/<slug>.jpg (2400x1350). Then commit & push.
 """
 import json, os, re, sys
@@ -23,6 +25,21 @@ THEMES = {
     'orange': ['#7A2E0E', '#F97316', '#FDBA74'], 'blue': ['#1E3A8A', '#3B82F6', '#93C5FD'],
     'pink': ['#831843', '#EC4899', '#F9A8D4'], 'teal': ['#134E4A', '#14B8A6', '#99F6E4'],
 }
+
+
+BANNER_BG = 'https://fitplusapp.com/wp-content/uploads/fp-top-banner.jpg'
+
+
+def top_banner():
+    return ('<!--fp-top--><a href="https://web.fitplusapp.com/" style="display:block;text-decoration:none;margin:0 0 22px;'
+            'border-radius:16px;overflow:hidden;background:#1E1B4B url(%s) left center/cover no-repeat">'
+            '<span style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;'
+            'padding:16px 22px;background:linear-gradient(to left,#1E1B4B 0%%,#1E1B4BEE 48%%,#1E1B4B00 85%%)">'
+            '<span style="display:block;color:#fff;line-height:1.7">'
+            '<b style="display:block;font-size:1.08em;color:#fff">برنامه ورزشی و غذایی مخصوص بدن خودت</b>'
+            '<span style="font-size:.88em;color:#C7C2F0">آنالیز رایگان بدن در فیت‌پلاس</span></span>'
+            '<span style="background:#fff;color:#1E1B4B;font-weight:700;font-size:.92em;padding:8px 20px;border-radius:999px;'
+            'white-space:nowrap">شروع رایگان ←</span></span></a>' % BANNER_BG)
 
 
 def style(s, mid_sentence):
@@ -68,6 +85,7 @@ def style(s, mid_sentence):
            % mid_sentence)
     i = s.index('</p>') + 4
     s = s[:i] + top + s[i:]
+    s = top_banner() + s
     hs = [m.start() for m in re.finditer(r'<h2 ', s)]
     if hs:
         k = hs[len(hs) // 2]
@@ -117,6 +135,47 @@ def render_image(img, out_path):
     open(out_path, 'wb').write(base64.b64decode(data.split(',', 1)[1]))
 
 
+TOPICS = ['workout', 'home-workout', 'fat-loss', 'nutrition', 'cardio', 'recovery', 'app']
+
+
+def pick_photo(topic):
+    """Approved (reviewed: modest, men or hijab-wearing women) photo for topic, least recently used."""
+    ap = json.load(open(os.path.join(ROOT, 'photos', 'approved.json'), encoding='utf-8'))
+    used_f = os.path.join(ROOT, 'photos', 'used.json')
+    used = json.load(open(used_f)) if os.path.exists(used_f) else []
+    pool = [f for f in ap if '/%s/' % topic in f] or ap
+    fresh = [f for f in pool if f not in used]
+    choice = (fresh or sorted(pool, key=lambda f: used.index(f) if f in used else -1))[0]
+    used = [f for f in used if f != choice] + [choice]
+    json.dump(used, open(used_f, 'w'), indent=0)
+    return choice
+
+
+def render_photo(topic, out_path, photo=None):
+    """Digikala-Mag-style hero: real photo, cinematic grade, small FitPlus badge, no big text."""
+    from PIL import Image, ImageEnhance, ImageFilter, ImageDraw
+    rel = photo or pick_photo(topic)
+    im = Image.open(os.path.join(ROOT, rel)).convert('RGB')
+    W, H = 2400, 1350
+    r = max(W / im.width, H / im.height)
+    im = im.resize((round(im.width * r), round(im.height * r)), Image.LANCZOS)
+    x, y = (im.width - W) // 2, int((im.height - H) * 0.4)
+    im = im.crop((x, y, x + W, y + H))
+    im = ImageEnhance.Contrast(im).enhance(1.07)
+    im = ImageEnhance.Color(im).enhance(0.93)
+    vig = Image.new('L', (W, H), 0)
+    ImageDraw.Draw(vig).ellipse((-W * .15, -H * .25, W * 1.15, H * 1.25), fill=255)
+    vig = vig.filter(ImageFilter.GaussianBlur(220))
+    im = Image.composite(im, Image.new('RGB', (W, H), (12, 10, 30)), vig.point(lambda v: 90 + v * 165 // 255))
+    shade = Image.linear_gradient('L').resize((W, H)).point(lambda v: max(0, v - 150) * 0.9)
+    im = Image.composite(Image.new('RGB', (W, H), (10, 8, 28)), im, shade.convert('L'))
+    badge = Image.open(os.path.join(ROOT, 'tools', 'badge.png')).convert('RGBA')
+    badge = badge.resize((badge.width * 3 // 2, badge.height * 3 // 2), Image.LANCZOS)
+    im.paste(badge, (64, H - badge.height - 56), badge)
+    im.save(out_path, 'JPEG', quality=88, optimize=True, progressive=True)
+    return rel
+
+
 def main(path):
     a = json.load(open(path, encoding='utf-8'))
     slug = a['slug']
@@ -124,7 +183,10 @@ def main(path):
     os.makedirs(d, exist_ok=True)
     content = style(a['body_html'], a.get('mid_cta', 'برنامه' + ZW + 'ای که دقیقاً برای بدن تو ساخته شود، نتیجه بهتری می' + ZW + 'دهد.'))
     img_name = slug + '.jpg'
-    render_image(a['image'], os.path.join(d, img_name))
+    if a.get('photo_topic') or a.get('photo'):
+        render_photo(a.get('photo_topic', 'workout'), os.path.join(d, img_name), a.get('photo'))
+    else:
+        render_image(a['image'], os.path.join(d, img_name))
     post = {'title': a['title'], 'slug': slug, 'content': content, 'excerpt': a['excerpt'],
             'category': int(a.get('category', 38)), 'tags': a.get('tags', []),
             'rank_title': a.get('rank_title', a['title']), 'rank_description': a['excerpt'],
