@@ -1,0 +1,47 @@
+name: FitPlus Telegram channel
+
+on:
+  schedule:
+    # Tehran time (UTC+3:30): 08:00, 13:00, 20:30  ->  UTC 04:30, 09:30, 17:00
+    - cron: '30 4 * * *'
+    - cron: '30 9 * * *'
+    - cron: '0 17 * * *'
+    # check for newly published site articles every 2 hours
+    - cron: '15 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'slot or articles'
+        default: 'slot'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: telegram
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decide mode
+        id: m
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then echo "mode=${{ inputs.mode }}" >> $GITHUB_OUTPUT;
+          elif [ "${{ github.event.schedule }}" = "15 */2 * * *" ]; then echo "mode=articles" >> $GITHUB_OUTPUT;
+          else echo "mode=slot" >> $GITHUB_OUTPUT; fi
+      - name: Post
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHANNEL: ${{ vars.TELEGRAM_CHANNEL }}
+        run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHANNEL" ]; then echo "Bot token or channel not set yet - skipping"; exit 0; fi
+          python3 telegram/post.py ${{ steps.m.outputs.mode }}
+      - name: Save state
+        run: |
+          git config user.name "FitPlus Telegram Bot"
+          git config user.email "telegram-bot@fitplusapp.com"
+          git add telegram/state.json || true
+          git diff --cached --quiet || (git commit -m "telegram state" && git pull --rebase && git push)
