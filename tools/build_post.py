@@ -36,14 +36,17 @@ LOGO_SVG = ('<svg width="54" height="18" viewBox="120 360 930 300" aria-hidden="
 
 def top_banner(bg=None):
     bg = bg or BANNER_BG
-    return ('<!--fp-top--><a href="https://web.fitplusapp.com/" style="display:flex;direction:rtl;min-height:96px;margin:0 0 22px;'
+    return ('<!--fp-top--><style>@media(max-width:600px){.fp-top{min-height:64px!important}.fp-top .fp-ph{display:none}'
+            '.fp-top .fp-in{padding:10px 12px!important;flex-wrap:nowrap!important;gap:8px!important}.fp-top b{font-size:.86em!important}'
+            '.fp-top .fp-sub{font-size:.72em!important}.fp-top .fp-btn{padding:7px 12px!important;font-size:.78em!important}.fp-top svg{width:40px}}</style>'
+            '<a class="fp-top" href="https://web.fitplusapp.com/" style="display:flex;direction:rtl;min-height:96px;margin:0 0 22px;'
             'border-radius:16px;overflow:hidden;text-decoration:none;background:#140A9A">'
-            '<span style="flex:1 1 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 20px">'
+            '<span class="fp-in" style="flex:1 1 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 20px">'
             '<span style="display:flex;align-items:center;gap:14px">' + LOGO_SVG +
             '<span style="display:block;line-height:1.7"><b style="display:block;font-size:1.05em;color:#fff">برنامه ورزشی و غذایی مخصوص بدن خودت</b>'
-            '<span style="font-size:.86em;color:#D4CCFF">آنالیز رایگان بدن در فیت‌پلاس</span></span></span>'
-            '<span style="flex:none;background:#fff;color:#140A9A;font-weight:700;font-size:.92em;padding:9px 22px;border-radius:999px">شروع رایگان ←</span></span>'
-            '<span style="flex:0 0 26%;max-width:260px;background:url(' + bg + ') center/cover no-repeat;'
+            '<span class="fp-sub" style="font-size:.86em;color:#D4CCFF">آنالیز رایگان بدن در فیت‌پلاس</span></span></span>'
+            '<span class="fp-btn" style="flex:none;background:#fff;color:#140A9A;font-weight:700;font-size:.92em;padding:9px 22px;border-radius:999px">شروع رایگان ←</span></span>'
+            '<span class="fp-ph" style="flex:0 0 26%;max-width:260px;background:url(' + bg + ') center/cover no-repeat;'
             '-webkit-mask-image:linear-gradient(to right,#000 55%,transparent);mask-image:linear-gradient(to right,#000 55%,transparent)"></span></a>')
 
 
