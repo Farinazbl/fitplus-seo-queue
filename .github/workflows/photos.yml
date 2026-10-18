@@ -1,0 +1,27 @@
+name: FitPlus photo library
+
+on:
+  push:
+    paths: ['tools/photo_queries.json', 'tools/fetch_photos.py']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: photos
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download photos
+        run: python3 tools/fetch_photos.py
+      - name: Commit
+        run: |
+          git config user.name "FitPlus Photo Bot"
+          git config user.email "photo-bot@fitplusapp.com"
+          git add photos
+          git diff --cached --quiet || (git commit -m "photo library update" && git pull --rebase && git push)
