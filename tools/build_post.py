@@ -40,7 +40,7 @@ def top_banner(bg=None):
         'style="flex:none"', 'style="position:absolute;left:-30px;top:50%;transform:translateY(-50%);opacity:.13"')
     return ('<!--fp-top--><style>.fp-top{position:relative}.fp-top:hover .fp-btn{transform:translateX(-3px)}'
             '@media(max-width:600px){.fp-top{min-height:64px!important}.fp-top .fp-in{padding:10px 14px!important;gap:10px!important}'
-            '.fp-top b{font-size:.86em!important}.fp-top .fp-sub{display:none}.fp-top .fp-btn{padding:7px 14px!important;font-size:.78em!important}'
+            '.fp-top b{font-size:.86em!important}.fp-top .fp-sub{display:none!important}.fp-top .fp-btn{padding:7px 14px!important;font-size:.78em!important}'
             '.fp-top .fp-logo{width:38px}}</style>'
             '<a class="fp-top" href="https://web.fitplusapp.com/" style="display:block;min-height:88px;margin:0 0 24px;border-radius:16px;'
             'overflow:hidden;text-decoration:none;background:radial-gradient(120% 140% at 0% 50%,#3524D6 0%,#140A9A 52%,#0E0770 100%);'
