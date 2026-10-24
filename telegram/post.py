@@ -69,6 +69,8 @@ def slot(state):
     if day % 2 or not os.path.exists(img):
         th = themes[(day // 2) % len(themes)] if day % 2 else 'classic'
         img = os.path.join(HERE, 'images-themes', th, 'post-%02d.jpg' % (n + 1))
+    if n >= 60:  # «فیتپلی می‌گه» mascot series has its own artwork
+        img = os.path.join(HERE, 'fitplay-posts', 'fitplay-%02d.jpg' % (n - 59))
     r = call('sendPhoto', {'chat_id': CHANNEL, 'caption': clean(posts[n]), 'reply_markup': BTN}, ('photo', img))
     print('slot post', n + 1, r.get('ok'), r.get('description'))
     if not r.get('ok'):
