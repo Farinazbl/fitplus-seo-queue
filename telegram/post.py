@@ -62,8 +62,8 @@ def clean(caption):
 def slot(state):
     posts = load(os.path.join(HERE, 'posts.json'), [])
     n = state.get('next', 0) % len(posts)
-    themes = ['poster', 'neon', 'wellness', 'magazine']  # design changes every 3 days
-    th = themes[(int(time.time() // 86400) // 3) % len(themes)]
+    themes = ['poster', 'classic', 'neon', 'wellness', 'circle', 'magazine']  # a different design every day
+    th = themes[int((time.time() + 12600) // 86400) % len(themes)]
     img = os.path.join(HERE, 'images-themes', th, 'post-%02d.jpg' % (n + 1))
     if not os.path.exists(img):
         img = os.path.join(HERE, 'images', 'post-%02d.jpg' % (n + 1))

@@ -16,7 +16,7 @@ from playwright.sync_api import sync_playwright
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FONTS = os.path.join(ROOT, 'tools', 'fonts')
 FA = str.maketrans('0123456789', '۰۱۲۳۴۵۶۷۸۹')
-THEMES = ['poster', 'neon', 'wellness', 'magazine']
+THEMES = ['poster', 'classic', 'neon', 'wellness', 'circle', 'magazine']
 W, H = 1080, 1350
 
 # n: (headline, highlight word, tag, photo topic, big number/keyword)
@@ -90,6 +90,20 @@ def pick_photo(n):
     return 'file://' + os.path.join(ROOT, f)
 
 
+POSTS = json.load(open(os.path.join(ROOT, 'telegram', 'posts.json'), encoding='utf-8'))
+
+
+def subtitle(n):
+    import re
+    lines = [l for l in POSTS[n - 1].split('\n') if l.strip()][1:]
+    for l in lines:
+        c = re.sub('[\U0001F000-\U0001FAFF\u2600-\u27BF\uFE0F\u25AA-\u25FE]', '', l)
+        c = re.sub(r'^[\s\-•▫·*۰-۹0-9.:)]+', '', c).strip()
+        if len(c) > 10:
+            return c if len(c) <= 46 else c[:44].rsplit(' ', 1)[0] + '…'
+    return ''
+
+
 def page(theme, n, meta, photo):
     faces = ''.join("@font-face{font-family:Vaz;font-weight:%s;src:url('file://%s/Vazirmatn-%s.woff2')}" % (w, FONTS, f)
                     for w, f in (('400', 'Regular'), ('500', 'Medium'), ('700', 'Bold'), ('800', 'ExtraBold')))
@@ -155,6 +169,46 @@ h1 em{font-style:normal;color:%s}
 <div class="card"><div class="pic"></div><div class="txt"><h1>%s</h1></div></div>
 <div class="ft"><span class="cta">شروع رایگان ←</span><span class="id">@fitplusapp</span></div>""" % (
             logo('#140A9A', '#5B4BFF'), tag, hl)
+    elif theme == 'classic':  # the original FitPlus look (blue/white cards), now with matching photo
+        dark = n % 2 == 0
+        bg, fg, sub, card = ('#1A0FB8', '#fff', '#D4CCFF', '#fff') if dark else ('#EEEDFF', '#14122B', '#4B4870', '#1A0FB8')
+        css = base + """
+.st{background:%s;color:%s}
+.wm{position:absolute;left:-120px;top:520px;width:900px;opacity:.07}
+.top{position:absolute;top:60px;right:64px;left:64px;display:flex;justify-content:space-between;align-items:center}
+.tag{background:%s;color:%s;font-weight:800;font-size:28px;padding:8px 24px;border-radius:999px}
+.hd{position:absolute;top:190px;right:64px;left:64px;height:420px;display:flex;flex-direction:column;justify-content:center}
+h1{margin:0;font-size:%dpx;font-weight:800;line-height:1.4}
+.ln{width:110px;height:9px;border-radius:9px;background:%s;margin:30px 0 24px}
+.sub{font-size:36px;font-weight:500;color:%s}
+.pic{position:absolute;top:640px;right:64px;left:64px;height:430px;border-radius:34px;background:url('%s') center 35%%/cover;box-shadow:0 30px 60px -30px rgba(0,0,0,.45)}
+.bar{position:absolute;bottom:60px;right:64px;left:64px;background:%s;border-radius:22px;padding:24px 32px;display:flex;justify-content:space-between;align-items:center;font-size:30px;font-weight:700;color:%s}
+""" % (bg, fg, card, bg, tsz - 6, fg if dark else '#1A0FB8', sub, photo, card, bg)
+        body = """<img class="wm" src="file://%s" alt="">
+<div class="top"><span class="lg" style="color:%s">%s<span>فیت‌پلاس</span></span><span class="tag">%s</span></div>
+<div class="hd"><h1>%s</h1><div class="ln"></div><div class="sub">%s</div></div><div class="pic"></div>
+<div class="bar"><span>نصب رایگان از کافه‌بازار و مایکت</span><span class="id">@fitplusapp</span></div>""" % (
+            os.path.join(ROOT, 'tools', 'logo-white.png' if dark else 'logo-color.png'), fg,
+            logo('#fff' if dark else '#140A9A', ''), tag, html.escape(meta[0]), html.escape(subtitle(n)))
+    elif theme == 'circle':  # clean white, round photo, big headline (minimal studio look)
+        acc = ['#FF6B35', '#1A0FB8', '#00A878', '#E63946'][n % 4]
+        css = base + """
+.st{background:#FFFFFF;color:#111}
+.ring{position:absolute;width:760px;height:760px;border-radius:50%%;border:22px solid %s;top:110px;left:-190px;opacity:.18}
+.pic{position:absolute;width:620px;height:620px;border-radius:50%%;top:180px;left:-80px;background:url('%s') center 35%%/cover;box-shadow:0 40px 80px -40px rgba(0,0,0,.5)}
+.top{position:absolute;top:60px;right:64px;left:64px;display:flex;justify-content:space-between;align-items:center;color:#140A9A}
+.tag{color:%s;font-weight:800;font-size:30px;border-bottom:5px solid %s;padding-bottom:4px}
+.big{position:absolute;top:230px;right:64px;font-size:170px;font-weight:800;color:%s;line-height:1;direction:ltr}
+h1{position:absolute;top:850px;right:64px;left:64px;margin:0;font-size:%dpx;font-weight:800;line-height:1.4}
+h1 em{font-style:normal;color:%s}
+.sub{position:absolute;top:1080px;right:64px;left:64px;font-size:34px;font-weight:500;color:#555}
+.ft{position:absolute;bottom:56px;right:64px;left:64px;display:flex;justify-content:space-between;align-items:center;font-size:30px;font-weight:700;color:#140A9A}
+.cta{background:%s;color:#fff;border-radius:999px;padding:14px 30px;font-weight:800}
+""" % (acc, photo, acc, acc, acc, tsz - 8, acc, acc)
+        body = """<div class="ring"></div><div class="pic"></div><div class="big">%s</div>
+<div class="top"><span class="lg">%s<span>فیت‌پلاس</span></span><span class="tag">%s</span></div>
+<h1>%s</h1><div class="sub">%s</div><div class="ft"><span class="cta">برنامه رایگان ←</span><span class="id">@fitplusapp</span></div>""" % (
+            big, logo('#140A9A', ''), tag, hl, html.escape(subtitle(n)))
     else:  # magazine
         css = base + """
 .st{background:#140A9A;color:#fff}
