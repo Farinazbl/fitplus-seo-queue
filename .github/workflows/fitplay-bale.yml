@@ -1,0 +1,33 @@
+name: FitPlus Bale - FitPlay daily
+
+on:
+  schedule:
+    # Tehran time (UTC+3:30) 10:00 -> UTC 06:30
+    - cron: '30 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fitplay-bale
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Post FitPlay to Bale
+        env:
+          BALE_BOT_TOKEN: ${{ secrets.BALE_BOT_TOKEN }}
+          BALE_CHANNEL: ${{ vars.BALE_CHANNEL }}
+        run: |
+          if [ -z "$BALE_BOT_TOKEN" ]; then echo "BALE_BOT_TOKEN secret not set yet - skipping"; exit 0; fi
+          python3 telegram/post_bale_fitplay.py
+      - name: Save state
+        run: |
+          git config user.name "FitPlus Bale Bot"
+          git config user.email "bale-bot@fitplusapp.com"
+          git add telegram/fitplay_bale_state.json || true
+          git diff --cached --quiet || (git commit -m "fitplay bale state" && git pull --rebase && git push)
