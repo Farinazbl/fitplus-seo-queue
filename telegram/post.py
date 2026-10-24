@@ -7,7 +7,7 @@ Modes:
 Env: TELEGRAM_BOT_TOKEN (secret), TELEGRAM_CHANNEL (e.g. @fitplusapp)
 State is kept in telegram/state.json and committed back by the workflow.
 """
-import json, os, re, sys, urllib.error, urllib.request, uuid
+import time, json, os, re, sys, urllib.error, urllib.request, uuid
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -62,7 +62,11 @@ def clean(caption):
 def slot(state):
     posts = load(os.path.join(HERE, 'posts.json'), [])
     n = state.get('next', 0) % len(posts)
-    img = os.path.join(HERE, 'images', 'post-%02d.jpg' % (n + 1))
+    themes = ['poster', 'neon', 'wellness', 'magazine']  # design changes every 3 days
+    th = themes[(int(time.time() // 86400) // 3) % len(themes)]
+    img = os.path.join(HERE, 'images-themes', th, 'post-%02d.jpg' % (n + 1))
+    if not os.path.exists(img):
+        img = os.path.join(HERE, 'images', 'post-%02d.jpg' % (n + 1))
     r = call('sendPhoto', {'chat_id': CHANNEL, 'caption': clean(posts[n]), 'reply_markup': BTN}, ('photo', img))
     print('slot post', n + 1, r.get('ok'), r.get('description'))
     if not r.get('ok'):
