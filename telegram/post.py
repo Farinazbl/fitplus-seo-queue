@@ -62,11 +62,13 @@ def clean(caption):
 def slot(state):
     posts = load(os.path.join(HERE, 'posts.json'), [])
     n = state.get('next', 0) % len(posts)
-    themes = ['poster', 'classic', 'neon', 'wellness', 'circle', 'magazine']  # a different design every day
-    th = themes[int((time.time() + 12600) // 86400) % len(themes)]
-    img = os.path.join(HERE, 'images-themes', th, 'post-%02d.jpg' % (n + 1))
-    if not os.path.exists(img):
-        img = os.path.join(HERE, 'images', 'post-%02d.jpg' % (n + 1))
+    # alternate days: original design one day, one of the 6 new designs the next
+    themes = ['poster', 'classic', 'neon', 'wellness', 'circle', 'magazine']
+    day = int((time.time() + 12600) // 86400)
+    img = os.path.join(HERE, 'images', 'post-%02d.jpg' % (n + 1))
+    if day % 2 or not os.path.exists(img):
+        th = themes[(day // 2) % len(themes)] if day % 2 else 'classic'
+        img = os.path.join(HERE, 'images-themes', th, 'post-%02d.jpg' % (n + 1))
     r = call('sendPhoto', {'chat_id': CHANNEL, 'caption': clean(posts[n]), 'reply_markup': BTN}, ('photo', img))
     print('slot post', n + 1, r.get('ok'), r.get('description'))
     if not r.get('ok'):
