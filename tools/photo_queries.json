@@ -1,9 +1,7 @@
 {
- "workout": ["man gym", "man dumbbell", "man weightlifting", "man barbell", "man fitness training", "hijab sport", "muslim woman exercise"],
- "home-workout": ["man push up", "man exercise home", "man squat", "hijab woman exercise"],
- "fat-loss": ["man running", "man jogging", "man fitness"],
- "nutrition": ["salad", "healthy food", "vegetables", "meal prep", "smoothie"],
- "cardio": ["man runner", "man jump rope", "man treadmill", "man cycling"],
- "recovery": ["man stretching", "man drinking water", "man rest"],
- "app": ["man smartphone", "man phone gym", "personal trainer man"]
+ "hijab": ["hijab", "hijab woman", "muslim woman", "hijab sport", "hijab fitness", "hijab running", "hijab yoga", "muslim woman exercise"],
+ "workout": ["man gym", "man dumbbell", "man weightlifting", "athlete man training"],
+ "cardio": ["man running", "man walking park", "man cycling"],
+ "recovery": ["man stretching", "man drinking water", "man sleeping"],
+ "app": ["man smartphone", "man phone app"]
 }
