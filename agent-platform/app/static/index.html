@@ -89,6 +89,11 @@ function toast(msg) { const t = $("#toast"); t.textContent = msg; t.style.displa
 const fa = (s) => STATUS_FA[s] || s;
 const when = (s) => s ? new Date(s).toLocaleString("fa-IR", {dateStyle:"short", timeStyle:"short"}) : "";
 
+function preview(uid) {
+  const img = el("img", {style: "max-width:320px;border-radius:8px;display:block;margin:8px 0"});
+  fetch(`/api/content/${uid}/image`, {headers: {"X-API-Token": token}}).then(r => r.ok ? r.blob() : null).then(b => { if (b) img.src = URL.createObjectURL(b); });
+  return img;
+}
 async function api(path, opts = {}) {
   const r = await fetch("/api" + path, {...opts, headers: {"X-API-Token": token, "Content-Type": "application/json", ...(opts.headers || {})}});
   const data = await r.json().catch(() => ({}));
@@ -168,7 +173,7 @@ const VIEWS = {
       const body = el("textarea", {disabled: !canEdit()}, a.body), note = el("input", {placeholder: "یادداشت (اختیاری)", disabled: !canEdit()});
       const decide = (d) => async () => { try { await api(`/approvals/${a.id}/decide`, {method: "POST", body: JSON.stringify({decision: d, note: note.value || null, edited_body: body.value !== a.body ? body.value : null})}); toast(d === "approved" ? "تأیید شد و برای انتشار در صف رفت" : "رد شد"); render(); } catch (e) { toast(e.message); } };
       return el("div", {class: "card"}, el("div", {class: "row"}, el("b", {}, a.agent_key), el("span", {class: "badge"}, a.kind), el("span", {class: "badge"}, a.content_uid)),
-        el("div", {}, "دلیل ارجاع: ", a.reasons.join("؛ ")), body,
+        el("div", {}, "دلیل ارجاع: ", a.reasons.join("؛ ")), a.kind === "image_post" ? preview(a.content_uid) : "", body,
         canEdit() ? el("div", {class: "row"}, note, el("button", {class: "act", onclick: decide("approved")}, "تأیید و انتشار"), el("button", {class: "bad", onclick: decide("rejected")}, "رد")) : "");
     });
   },

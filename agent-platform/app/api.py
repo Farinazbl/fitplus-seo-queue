@@ -11,7 +11,7 @@ from typing import Optional
 from starlette.applications import Starlette
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
-from starlette.responses import JSONResponse
+from starlette.responses import FileResponse, JSONResponse
 from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 
@@ -185,6 +185,19 @@ def create_app(settings: Settings) -> Starlette:
         if t is None:
             raise HTTPException(404, "محتوا پیدا نشد")
         return JSONResponse(t)
+
+    async def content_image(request):
+        auth(request, "viewer")
+        c = repo.get_content(db, request.path_params["uid"])
+        path = (c or {}).get("meta", {}).get("image_path")
+        if not path:
+            raise HTTPException(404, "تصویری برای این محتوا نیست")
+        from pathlib import Path
+        from . import imaging
+        p, root = Path(path).resolve(), imaging.media_dir(settings.db_path).resolve()
+        if root not in p.parents or not p.is_file():
+            raise HTTPException(404, "فایل تصویر پیدا نشد")
+        return FileResponse(p, media_type="image/png")
 
     async def approvals_list(request):
         auth(request, "viewer")
@@ -463,6 +476,7 @@ def create_app(settings: Settings) -> Starlette:
         Route("/api/jobs", jobs_list),
         Route("/api/jobs/{jid:int}/retry", job_retry, methods=["POST"]),
         Route("/api/content", content_list),
+        Route("/api/content/{uid}/image", content_image),
         Route("/api/content/{uid}", content_trace),
         Route("/api/approvals", approvals_list),
         Route("/api/approvals/{aid:int}/decide", approval_decide, methods=["POST"]),
