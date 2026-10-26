@@ -14,6 +14,10 @@ from . import http
 
 IMAGES_URL = "https://api.openai.com/v1/images/generations"
 ASSETS = Path(__file__).parent / "assets"
+STYLE = ("Professional food and fitness photography, shot on a full-frame camera with an 85mm lens, shallow depth of field, "
+         "soft natural window light, rich true-to-life colors, crisp detail, appetizing editorial styling on a rustic wood or "
+         "stone surface, generous clean negative space in the lower third for text. Real, fresh, whole ingredients with natural "
+         "imperfections and water droplets - never plastic, never illustration, never 3D render, no AI-looking gloss.")
 SAFETY = ("Natural, high-quality photograph, realistic lighting. If any people appear they must be adults, "
           "fully clothed, preferably men; any woman must wear a hijab and be fully covered. No text, no logos, "
           "no watermarks, no nudity.")
@@ -33,8 +37,10 @@ def generate_photo(prompt: str, transport=http.request) -> bytes:
     key = os.environ.get("OPENAI_API_KEY")
     if not key:
         raise ImagingError("OPENAI_API_KEY برای ساخت تصویر تنظیم نشده است")
-    body = {"model": os.environ.get("APP_IMAGE_MODEL", "gpt-image-1"), "prompt": f"{prompt}\n{SAFETY}",
+    body = {"model": os.environ.get("APP_IMAGE_MODEL", "gpt-image-1"), "prompt": f"{prompt}\n{STYLE}\n{SAFETY}",
             "size": "1024x1024", "n": 1}
+    if body["model"].startswith("gpt-image"):
+        body["quality"] = os.environ.get("APP_IMAGE_QUALITY", "high")
     try:
         raw = transport("POST", IMAGES_URL, headers={"Authorization": f"Bearer {key}"}, json_body=body, timeout=180)
         item = json.loads(raw)["data"][0]
@@ -47,6 +53,16 @@ def generate_photo(prompt: str, transport=http.request) -> bytes:
     except (KeyError, IndexError, ValueError, TypeError):
         raise ImagingError("پاسخ نامعتبر از سرویس تصویر") from None
     raise ImagingError("تصویری برنگشت")
+
+
+def _latin_font(size):
+    """The Persian font may lack Latin letters (e.g. BYekan): use a Latin-capable font for @channel."""
+    from PIL import ImageFont
+    for c in (os.environ.get("APP_FONT_LATIN"), r"C:\Windows\Fonts\arialbd.ttf", r"C:\Windows\Fonts\arial.ttf",
+              "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", "/Library/Fonts/Arial.ttf"):
+        if c and Path(c).is_file():
+            return ImageFont.truetype(c, size)
+    return ImageFont.load_default(size)
 
 
 def _logo(path, width):
@@ -96,11 +112,11 @@ def render_card(photo: bytes, text: str, footer: str = "", logo_path=None, font_
     lines = _wrap(d, text, font, size - 2 * pad)[:5]
     y = size - pad - int(size * 0.05) - len(lines) * int(fs * 1.55)
     for ln in lines:
-        d.text((size - pad, y), ln, font=font, fill="white", anchor="ra", direction="rtl", language="fa")
+        d.text((size - pad, y), ln, font=font, fill="white", anchor="ra", direction="rtl", language="fa",
+               stroke_width=max(1, fs // 38), stroke_fill="white")  # light faux-bold: thin Persian fonts stay readable
         y += int(fs * 1.55)
     if footer:
-        ff = ImageFont.truetype(font_path, int(size * 0.035), layout_engine=ImageFont.Layout.RAQM)
-        d.text((size - pad, size - pad), footer, font=ff, fill=(220, 220, 255), anchor="rs")
+        d.text((size - pad, size - pad), footer, font=_latin_font(int(size * 0.037)), fill=(220, 220, 255), anchor="rs")
     logo = _logo(logo_path or ASSETS / "logo.jpg", int(size * 0.2))
     plate = Image.new("RGBA", (logo.width + 30, logo.height + 30), (255, 255, 255, 215))
     img.alpha_composite(plate, (pad // 2, pad // 2))
