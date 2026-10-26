@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>داشبورد ایجنت‌ها</title>
+<style>
+  /* Put the licensed Bakh Yekan file at /static/fonts/BakhYekan.woff2 (the client must supply it). */
+  @font-face { font-family: "Bakh Yekan"; src: url("/fonts/BakhYekan.woff2") format("woff2"); font-display: swap; }
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#1c2430; --mute:#5f6b7a; --line:#dde2e8; --brand:#1f6feb;
+          --ok:#1a7f37; --warn:#9a6700; --err:#c62828; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#12161c; --card:#1b212a; --ink:#e6eaf0; --mute:#9aa6b5; --line:#2c3541; --brand:#5aa0ff;
+            --ok:#4cc26a; --warn:#e3b341; --err:#ff7b72; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); line-height:1.7;
+         font-family:"Bakh Yekan","Vazirmatn",Tahoma,"Segoe UI",sans-serif; }
+  header { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between;
+           padding:12px 16px; background:var(--card); border-bottom:1px solid var(--line); }
+  header h1 { font-size:1.1rem; margin:0; }
+  nav { display:flex; flex-wrap:wrap; gap:6px; padding:10px 16px 0; }
+  nav button { border:1px solid var(--line); background:var(--card); color:var(--ink); padding:6px 14px;
+               border-radius:8px; cursor:pointer; font:inherit; }
+  nav button[aria-selected="true"] { background:var(--brand); border-color:var(--brand); color:#fff; }
+  main { padding:16px; max-width:1100px; margin:0 auto; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:12px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; }
+  .stat b { display:block; font-size:1.6rem; }
+  .stat span { color:var(--mute); font-size:.85rem; }
+  table { width:100%; border-collapse:collapse; font-size:.9rem; }
+  th, td { text-align:right; padding:8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--mute); font-weight:600; }
+  .table-wrap { overflow-x:auto; }
+  input, textarea, select { font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--line);
+                            border-radius:8px; padding:6px 10px; max-width:100%; }
+  textarea { width:100%; min-height:90px; }
+  label { display:block; margin:8px 0 2px; color:var(--mute); font-size:.85rem; }
+  button.act { border:0; background:var(--brand); color:#fff; padding:6px 14px; border-radius:8px; cursor:pointer; font:inherit; }
+  button.alt { border:1px solid var(--line); background:transparent; color:var(--ink); padding:6px 14px; border-radius:8px; cursor:pointer; font:inherit; }
+  button.bad { border:0; background:var(--err); color:#fff; padding:6px 14px; border-radius:8px; cursor:pointer; font:inherit; }
+  .badge { display:inline-block; padding:1px 10px; border-radius:99px; font-size:.8rem; border:1px solid var(--line); }
+  .ok { color:var(--ok); } .warn { color:var(--warn); } .err { color:var(--err); }
+  .alert { padding:8px 12px; border-radius:8px; margin-bottom:8px; border:1px solid var(--line); }
+  .alert.error { border-color:var(--err); color:var(--err); } .alert.warning { border-color:var(--warn); color:var(--warn); }
+  pre { white-space:pre-wrap; background:var(--bg); padding:10px; border-radius:8px; border:1px solid var(--line); margin:6px 0; direction:rtl; }
+  #login { max-width:380px; margin:12vh auto; }
+  #toast { position:fixed; bottom:16px; inset-inline:16px; margin:auto; width:fit-content; max-width:90vw; background:var(--ink);
+           color:var(--bg); padding:8px 16px; border-radius:8px; display:none; }
+  .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  @media (max-width:600px) { main { padding:10px; } }
+</style>
+</head>
+<body>
+<div id="login" class="card" hidden>
+  <h1>ورود به داشبورد</h1>
+  <label for="tok">توکن دسترسی</label>
+  <input id="tok" type="password" autocomplete="off" style="width:100%" dir="ltr">
+  <p><button class="act" id="loginBtn">ورود</button></p>
+  <p id="loginErr" class="err"></p>
+</div>
+<div id="app" hidden>
+  <header>
+    <h1>داشبورد ایجنت‌های هوشمند</h1>
+    <div class="row"><span id="who" class="badge"></span><button class="alt" id="logout">خروج</button></div>
+  </header>
+  <nav id="tabs" role="tablist"></nav>
+  <main id="view"></main>
+</div>
+<div id="toast" role="status"></div>
+<script>
+"use strict";
+const TABS = [["overview","نمای کلی"],["agents","ایجنت‌ها"],["approvals","صف تأیید"],["calendar","تقویم محتوا"],["content","محتوا"],["reports","گزارش‌ها"],["campaign","کمپین و شهر مجازی"],["jobs","وظایف"],["audit","سوابق تغییرات"]];
+const STATUS_FA = {draft:"پیش‌نویس",rejected:"ردشده",pending_approval:"در انتظار تأیید",approved:"تأییدشده",published:"منتشرشده",
+  ready_manual:"آماده انتشار دستی",report:"گزارش",sent:"ارسال‌شده",cancelled:"لغوشده",unknown:"نامشخص",pending:"در انتظار",verified:"تأییدشده",waitlist:"فهرست انتظار",failed:"ناموفق",queued:"در صف",running:"در حال اجرا",done:"انجام‌شده",dead:"متوقف"};
+let token = sessionStorage.getItem("tok") || "", me = null, tab = "overview";
+
+const $ = (s) => document.querySelector(s);
+function el(tag, attrs, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "class") n.className = v; else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const kid of kids.flat()) n.append(kid instanceof Node ? kid : document.createTextNode(kid ?? ""));
+  return n;
+}
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.style.display = "block"; setTimeout(() => t.style.display = "none", 3500); }
+const fa = (s) => STATUS_FA[s] || s;
+const when = (s) => s ? new Date(s).toLocaleString("fa-IR", {dateStyle:"short", timeStyle:"short"}) : "";
+
+async function api(path, opts = {}) {
+  const r = await fetch("/api" + path, {...opts, headers: {"X-API-Token": token, "Content-Type": "application/json", ...(opts.headers || {})}});
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(data.error || ("خطا " + r.status)); e.status = r.status; throw e; }
+  return data;
+}
+const canEdit = () => me && ["editor", "admin"].includes(me.role);
+
+async function login() {
+  try { me = await api("/me"); } catch (e) { me = null; $("#login").hidden = false; $("#app").hidden = true; $("#loginErr").textContent = token ? e.message : ""; return; }
+  $("#login").hidden = true; $("#app").hidden = false;
+  $("#who").textContent = `${me.name} (${me.role})`;
+  const nav = $("#tabs"); nav.replaceChildren(...TABS.filter(([k]) => k !== "audit" || me.role === "admin").map(([k, label]) =>
+    el("button", {role: "tab", "aria-selected": String(k === tab), onclick: () => { tab = k; login(); }}, label)));
+  render();
+}
+$("#loginBtn").onclick = () => { token = $("#tok").value.trim(); sessionStorage.setItem("tok", token); login(); };
+$("#tok").addEventListener("keydown", (e) => { if (e.key === "Enter") $("#loginBtn").click(); });
+$("#logout").onclick = () => { sessionStorage.removeItem("tok"); token = ""; me = null; location.reload(); };
+
+async function render() {
+  const view = $("#view");
+  try { view.replaceChildren(...await VIEWS[tab]()); } catch (e) { view.replaceChildren(el("div", {class: "alert error"}, e.message)); }
+}
+const table = (heads, rows) => el("div", {class: "table-wrap"}, el("table", {}, el("thead", {}, el("tr", {}, heads.map(h => el("th", {}, h)))),
+  el("tbody", {}, rows.length ? rows : el("tr", {}, el("td", {colspan: heads.length}, "موردی وجود ندارد")))));
+
+const VIEWS = {
+  async overview() {
+    const o = await api("/overview");
+    const stat = (n, label, cls) => el("div", {class: "card stat"}, el("b", {class: cls || ""}, String(n ?? 0)), el("span", {}, label));
+    return [
+      ...o.alerts.map(a => el("div", {class: "alert " + a.level}, a.message)),
+      el("div", {class: "grid"}, stat(o.pending_approvals, "در انتظار تأیید", o.pending_approvals ? "warn" : ""),
+        stat(o.content.published, "منتشرشده", "ok"), stat(o.content.ready_manual, "آماده انتشار دستی"),
+        stat(o.content.rejected, "ردشده (قانون/تکرار)"), stat(o.jobs.queued, "وظیفه در صف"), stat(o.jobs.dead, "وظیفه متوقف", o.jobs.dead ? "err" : "")),
+      el("div", {class: "card"}, el("h3", {}, "ایجنت‌ها"), table(["ایجنت", "وضعیت", "حالت انتشار"],
+        o.agents.map(a => el("tr", {}, el("td", {}, a.title), el("td", {}, el("span", {class: "badge " + (a.enabled ? "ok" : "")}, a.enabled ? "فعال" : "غیرفعال")),
+          el("td", {}, a.publish_mode === "auto" ? "خودکار" : "تأیید دستی"))))),
+      me.role === "admin" ? el("p", {}, el("button", {class: "alt", onclick: async () => { const r = await api("/worker/tick", {method: "POST"}); toast(`${r.enqueued} وظیفه زمانبندی و ${r.processed.length} وظیفه اجرا شد`); render(); }}, "اجرای یک نوبت زمانبند و صف")) : "",
+    ];
+  },
+  async agents() {
+    const list = await api("/agents");
+    return list.map(a => {
+      const f = {};
+      const field = (name, label, node) => { f[name] = node; return [el("label", {}, label), node]; };
+      const ta = (name, label, val, ltr) => field(name, label, el("textarea", {dir: ltr ? "ltr" : "rtl", disabled: !canEdit()}, val));
+      const card = el("div", {class: "card"},
+        el("div", {class: "row"}, el("h3", {style: "margin:0"}, a.title), el("span", {class: "badge"}, a.key),
+          el("span", {class: "badge " + (a.agent_type === "pending" ? "warn" : "ok")}, a.agent_type === "pending" ? "پیاده‌سازی در فاز بعد" : "آماده")),
+        el("div", {class: "row"},
+          el("label", {}, el("input", {type: "checkbox", id: "en-" + a.key, disabled: !canEdit(), checked: a.enabled}), " فعال"),
+          field("publish_mode", "حالت انتشار", el("select", {disabled: !canEdit()},
+            el("option", {value: "manual_approval", selected: a.publish_mode === "manual_approval"}, "تأیید دستی"),
+            el("option", {value: "auto", selected: a.publish_mode === "auto"}, "خودکار")))[1]),
+        ta("prompt", "پرامپت", a.prompt), ta("signature", "امضای کانال (انتهای هر پست)", a.signature),
+        ta("sources", "منابع (یک مورد در هر خط)", a.sources.join("\n"), true), ta("template", "قالب", a.template),
+        ta("schedule", "زمان‌بندی (JSON)", JSON.stringify(a.schedule, null, 1), true), ta("policy", "قوانین انتشار (JSON)", JSON.stringify(a.policy, null, 1), true),
+        canEdit() ? el("div", {class: "row", style: "margin-top:8px"},
+          el("button", {class: "act", onclick: async () => {
+            try {
+              const body = {enabled: $("#en-" + a.key).checked, publish_mode: f.publish_mode.value, prompt: f.prompt.value,
+                signature: f.signature.value, template: f.template.value, sources: f.sources.value.split("\n").map(s => s.trim()).filter(Boolean),
+                schedule: JSON.parse(f.schedule.value || "[]"), policy: JSON.parse(f.policy.value || "{}")};
+              await api("/agents/" + a.key, {method: "PUT", body: JSON.stringify(body)}); toast("ذخیره شد");
+            } catch (e) { toast(e instanceof SyntaxError ? "JSON نامعتبر است" : e.message); }
+          }}, "ذخیره"),
+          el("button", {class: "alt", onclick: async () => { try { const r = await api(`/agents/${a.key}/run`, {method: "POST", body: "{}"}); toast("وظیفه #" + r.job_id + " در صف قرار گرفت"); } catch (e) { toast(e.message); } }}, "اجرای دستی")) : "");
+      return card;
+    });
+  },
+  async approvals() {
+    const list = await api("/approvals");
+    if (!list.length) return [el("div", {class: "card"}, "موردی در انتظار تأیید نیست.")];
+    return list.map(a => {
+      const body = el("textarea", {disabled: !canEdit()}, a.body), note = el("input", {placeholder: "یادداشت (اختیاری)", disabled: !canEdit()});
+      const decide = (d) => async () => { try { await api(`/approvals/${a.id}/decide`, {method: "POST", body: JSON.stringify({decision: d, note: note.value || null, edited_body: body.value !== a.body ? body.value : null})}); toast(d === "approved" ? "تأیید شد و برای انتشار در صف رفت" : "رد شد"); render(); } catch (e) { toast(e.message); } };
+      return el("div", {class: "card"}, el("div", {class: "row"}, el("b", {}, a.agent_key), el("span", {class: "badge"}, a.kind), el("span", {class: "badge"}, a.content_uid)),
+        el("div", {}, "دلیل ارجاع: ", a.reasons.join("؛ ")), body,
+        canEdit() ? el("div", {class: "row"}, note, el("button", {class: "act", onclick: decide("approved")}, "تأیید و انتشار"), el("button", {class: "bad", onclick: decide("rejected")}, "رد")) : "");
+    });
+  },
+  async content() {
+    const status = sessionStorage.getItem("cf") || "";
+    const list = await api("/content" + (status ? "?status=" + status : ""));
+    const sel = el("select", {onchange: (e) => { sessionStorage.setItem("cf", e.target.value); render(); }}, el("option", {value: ""}, "همه وضعیت‌ها"),
+      Object.entries(STATUS_FA).filter(([k]) => ["rejected", "pending_approval", "approved", "published", "ready_manual", "failed"].includes(k))
+        .map(([k, v]) => el("option", {value: k, selected: k === status}, v)));
+    return [el("p", {}, sel), table(["شناسه", "ایجنت", "وضعیت", "دلیل", "زمان", ""], list.map(c => el("tr", {},
+      el("td", {dir: "ltr"}, c.uid), el("td", {}, c.agent_key), el("td", {}, fa(c.status)), el("td", {}, c.reason || ""), el("td", {}, when(c.created_at)),
+      el("td", {}, el("button", {class: "alt", onclick: () => showTrace(c.uid)}, "ردگیری")))))];
+  },
+  async calendar() {
+    const list = await api("/calendar?days=14");
+    const fmt = (iso) => new Date(iso).toLocaleString("fa-IR", {weekday: "long", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit"});
+    return [el("p", {}, "برنامه ۱۴ روز آینده ایجنت‌های فعال (بر اساس زمان‌بندی هر ایجنت)."),
+      table(["زمان", "ایجنت", "نوع کار"], list.map(c => el("tr", {}, el("td", {}, fmt(c.at)), el("td", {}, c.title), el("td", {}, c.task))))];
+  },
+  async reports() {
+    const list = await api("/content?status=report");
+    return list.length ? list.map(r => el("div", {class: "card"}, el("h3", {}, r.title), el("small", {}, when(r.created_at)), el("pre", {}, r.body)))
+      : [el("div", {class: "card"}, "هنوز گزارشی ساخته نشده است. گزارش هفتگی سئو پس از فعال‌سازی ایجنت سئو ساخته می‌شود.")];
+  },
+  async campaign() {
+    const [cs, ct, msgs, pend] = await Promise.all([api("/campaign/stats"), api("/city/stats"), api("/campaign/messages?limit=30"), api("/city/citizens?status=pending&limit=30")]);
+    const stat = (n, label) => el("div", {class: "card stat"}, el("b", {}, String(n ?? 0)), el("span", {}, label));
+    return [
+      el("h3", {}, "کمپین منیجر"),
+      el("div", {class: "grid"}, stat(cs.contacts, "مخاطب"), stat(cs.consented, "دارای رضایت"), stat(cs.queued, "در صف ارسال"), stat(cs.sent, "ارسال‌شده"), stat(cs.cancelled, "لغوشده"), stat(cs.failed, "ناموفق")),
+      table(["مخاطب", "سناریو", "وضعیت", "دلیل", "زمان ارسال"], msgs.map(m => el("tr", {}, el("td", {dir: "ltr"}, m.external_id + " " + m.phone), el("td", {}, m.scenario), el("td", {}, fa(m.status)), el("td", {}, m.reason || ""), el("td", {}, when(m.send_at))))),
+      el("h3", {}, "شهر مجازی"),
+      el("div", {class: "grid"}, stat(ct.population.toLocaleString("fa-IR"), "جمعیت اعلامی (تأییدشده)"), stat(ct.pending, "در انتظار تأیید"), stat(ct.waitlist, "فهرست انتظار"), stat(ct.raw_followers.toLocaleString("fa-IR"), "فالوور خام (فقط مرجع)")),
+      el("p", {class: "warn"}, "فقط «جمعیت اعلامی» را منتشر کنید؛ شمارش خام فالوورها جمعیت شهر نیست."),
+      table(["آیدی", "شغل", "رضایت نمایش", "فالو", ""], pend.map(c => el("tr", {}, el("td", {dir: "ltr"}, c.ig_id), el("td", {}, c.job || ""), el("td", {}, c.consent_display ? "دارد" : "ندارد"), el("td", {}, c.follow_ok ? "بله" : "خیر"),
+        el("td", {}, canEdit() ? el("button", {class: "alt", onclick: async () => { try { await api("/city/verify", {method: "POST", body: JSON.stringify({ig_id: c.ig_id})}); toast("تأیید شد"); render(); } catch (e) { toast(e.message); } }}, "بررسی و تأیید") : "")))),
+    ];
+  },
+  async jobs() {
+    const list = await api("/jobs");
+    return [table(["#", "نوع", "ایجنت", "وضعیت", "تلاش", "خطا", "زمان اجرا", ""], list.map(j => el("tr", {},
+      el("td", {}, String(j.id)), el("td", {}, j.kind), el("td", {}, j.agent_key || ""), el("td", {class: j.status === "dead" ? "err" : ""}, fa(j.status)),
+      el("td", {}, `${j.attempts}/${j.max_attempts}`), el("td", {}, j.last_error || j.note || ""), el("td", {}, when(j.run_at)),
+      el("td", {}, j.status === "dead" && canEdit() ? el("button", {class: "alt", onclick: async () => { await api(`/jobs/${j.id}/retry`, {method: "POST"}); render(); }}, "تلاش دوباره") : ""))))];
+  },
+  async audit() {
+    const list = await api("/audit");
+    return [table(["زمان", "کاربر", "عمل", "مورد", "جزئیات"], list.map(a => el("tr", {}, el("td", {}, when(a.created_at)), el("td", {}, a.actor),
+      el("td", {dir: "ltr"}, a.action), el("td", {dir: "ltr"}, `${a.entity}:${a.entity_id ?? ""}`), el("td", {dir: "ltr"}, a.detail))))];
+  },
+};
+
+async function showTrace(uid) {
+  const t = await api("/content/" + uid), c = t.content;
+  $("#view").replaceChildren(el("p", {}, el("button", {class: "alt", onclick: render}, "بازگشت")),
+    el("div", {class: "card"}, el("h3", {}, `ردگیری ${uid}`), el("div", {}, `ایجنت: ${c.agent_key} · وضعیت: ${fa(c.status)}`), c.reason ? el("div", {class: "warn"}, c.reason) : "", el("pre", {}, c.body)),
+    el("div", {class: "card"}, el("h3", {}, "تأییدها"), table(["وضعیت", "دلیل", "تصمیم‌گیرنده", "یادداشت"], t.approvals.map(a => el("tr", {}, el("td", {}, a.status), el("td", {}, a.reasons.join("؛ ")), el("td", {}, a.decided_by || ""), el("td", {}, a.note || ""))))),
+    el("div", {class: "card"}, el("h3", {}, "انتشار"), table(["مقصد", "نتیجه", "شناسه بیرونی", "خطا", "زمان"], t.publish_log.map(p => el("tr", {}, el("td", {}, p.destination), el("td", {}, p.ok ? (p.manual ? "آماده دستی" : "موفق") : "ناموفق"), el("td", {dir: "ltr"}, p.external_id || ""), el("td", {}, p.error || ""), el("td", {}, when(p.created_at)))))),
+    el("div", {class: "card"}, el("h3", {}, "رویدادها"), table(["زمان", "کاربر", "عمل"], t.audit.map(a => el("tr", {}, el("td", {}, when(a.created_at)), el("td", {}, a.actor), el("td", {dir: "ltr"}, a.action))))));
+}
+login();
+</script>
+</body>
+</html>
