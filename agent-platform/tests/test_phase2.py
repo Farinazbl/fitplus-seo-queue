@@ -282,3 +282,16 @@ class RfpRulesTests(unittest.TestCase):
                                           Draft(body="گزارش", title="گزارش هفتگی", kind="report"), self.settings)
         self.assertEqual(out, "report")
         self.assertEqual(queue.counts(self.db)["queued"], 0)
+
+
+class BaleSharedTokenTest(unittest.TestCase):
+    def test_default_env_var_is_bale_token(self):
+        import os
+        from unittest import mock
+        from app.connectors.bale import BaleConnector
+        calls = []
+        def tr(method, url, **kw):
+            calls.append(url); return '{"ok": true, "result": {"message_id": 1}}'
+        with mock.patch.dict(os.environ, {"BALE_TOKEN": "123:abc"}):
+            BaleConnector(transport=tr).publish({"body": "سلام", "kind": "text"}, {"config": {"chat_id": "@ch"}})
+        self.assertIn("123:abc", calls[0])

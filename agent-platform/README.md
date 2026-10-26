@@ -82,7 +82,7 @@ python -m unittest discover -s tests -v
 | `seo` | دو مقاله در هفته از فهرست عبارت‌های کلیدی، با عنوان و توضیح متا | وردپرس (پیش‌فرض: پیش‌نویس) |
 
 **راه‌اندازی هر ایجنت (از داشبورد یا API):**
-1. متغیرهای محیطی سرور: `ANTHROPIC_API_KEY` یا `OPENAI_API_KEY` (اختیاری: `APP_LLM_PROVIDER`، `APP_LLM_MODEL`، `OPENAI_BASE_URL`) و برای هر کانال بله یک توکن مثل `BALE_TOKEN_TAX`، برای وردپرس `WP_APP_PASSWORD` (Application Password).
+1. متغیرهای محیطی سرور: `ANTHROPIC_API_KEY` یا `OPENAI_API_KEY` (اختیاری: `APP_LLM_PROVIDER`، `APP_LLM_MODEL`، `OPENAI_BASE_URL`) و توکن بات بله در `BALE_TOKEN` (برای همه کانال‌ها مشترک؛ اگر کانالی توکن جدا دارد در config آن `token_env` بدهید)، برای وردپرس `WP_APP_PASSWORD` (Application Password).
 2. کانال را با `PUT /api/channels/{id}` تنظیم کنید: بله `{"config": {"chat_id": "@کانال", "token_env": "BALE_TOKEN_TAX"}}`، وردپرس `{"config": {"site": "https://...", "user": "bot", "password_env": "WP_APP_PASSWORD", "post_status": "draft"}}`. خود توکن را هرگز در config نگذارید (سامانه رد می‌کند). ربات باید ادمین کانال بله باشد.
 3. منابع: برای وب‌سایت‌ها `rss:https://.../feed`؛ برای کانال‌هایی که ربات نمی‌تواند بخواند، متن خبر را با `POST /api/inbox` بفرستید و در منابع `inbox` بگذارید. برای سئو، هر خط یک عبارت کلیدی.
 4. امضا و پرامپت کانال را بنویسید، ایجنت را فعال کنید و در حالت «تأیید دستی» چند روز بررسی کنید؛ بعد در صورت رضایت `auto` کنید.

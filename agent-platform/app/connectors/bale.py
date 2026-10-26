@@ -24,9 +24,10 @@ class BaleConnector(Connector):
 
     def publish(self, content, channel):
         cfg = (channel or {}).get("config", {})
-        chat_id, token_env = cfg.get("chat_id"), cfg.get("token_env")
-        if not chat_id or not token_env:
-            raise PermanentError("کانال بله بدون chat_id یا token_env تنظیم شده است")
+        chat_id = cfg.get("chat_id")
+        token_env = cfg.get("token_env") or "BALE_TOKEN"  # one shared token unless a channel names its own
+        if not chat_id:
+            raise PermanentError("کانال بله بدون chat_id تنظیم شده است")
         token = os.environ.get(token_env)
         if not token:
             raise PermanentError(f"متغیر محیطی {token_env} روی سرور تنظیم نشده است")
