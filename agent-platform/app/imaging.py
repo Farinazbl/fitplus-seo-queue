@@ -37,7 +37,7 @@ def generate_photo(prompt: str, transport=http.request) -> bytes:
     key = os.environ.get("OPENAI_API_KEY")
     if not key:
         raise ImagingError("OPENAI_API_KEY برای ساخت تصویر تنظیم نشده است")
-    body = {"model": os.environ.get("APP_IMAGE_MODEL", "gpt-image-1"), "prompt": f"{prompt}\n{STYLE}\n{SAFETY}",
+    body = {"model": os.environ.get("APP_IMAGE_MODEL", "gpt-image-2"), "prompt": f"{prompt}\n{STYLE}\n{SAFETY}",
             "size": "1024x1024", "n": 1}
     if body["model"].startswith("gpt-image"):
         body["quality"] = os.environ.get("APP_IMAGE_QUALITY", "high")
