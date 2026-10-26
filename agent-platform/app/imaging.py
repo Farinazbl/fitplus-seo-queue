@@ -77,11 +77,34 @@ def _logo(path, width):
     return im.resize((width, max(1, int(im.height * width / im.width))))
 
 
+def _raqm() -> bool:
+    from PIL import features
+    return bool(features.check("raqm"))
+
+
+def _prep(text):
+    """With RAQM Pillow shapes/reorders Persian itself; otherwise use arabic-reshaper + python-bidi."""
+    if _raqm():
+        return text, {"direction": "rtl", "language": "fa"}
+    try:
+        import arabic_reshaper
+        from bidi.algorithm import get_display
+    except ImportError:
+        raise ImagingError("برای متن فارسی روی تصویر: pip install arabic-reshaper python-bidi") from None
+    return get_display(arabic_reshaper.reshape(text)), {}
+
+
+def _font(path, size):
+    from PIL import ImageFont
+    return ImageFont.truetype(path, size, layout_engine=ImageFont.Layout.RAQM if _raqm() else ImageFont.Layout.BASIC)
+
+
 def _wrap(draw, text, font, max_w):
     lines, cur = [], ""
     for w in text.split():
         t = (cur + " " + w).strip()
-        if cur and draw.textlength(t, font=font, direction="rtl", language="fa") > max_w:
+        shaped, kw = _prep(t)
+        if cur and draw.textlength(shaped, font=font, **kw) > max_w:
             lines.append(cur); cur = w
         else:
             cur = t
@@ -90,9 +113,7 @@ def _wrap(draw, text, font, max_w):
 
 def render_card(photo: bytes, text: str, footer: str = "", logo_path=None, font_path=None, size=1080) -> bytes:
     """Photo with a dark gradient, big Persian text at the bottom, logo top-left, @channel footer."""
-    from PIL import Image, ImageDraw, ImageFont, features
-    if not features.check("raqm"):
-        raise ImagingError("Pillow بدون پشتیبانی RAQM است؛ نسخه رسمی pillow را نصب کنید")
+    from PIL import Image, ImageDraw
     font_path = font_path or os.environ.get("APP_FONT")
     if not font_path or not Path(font_path).is_file():
         raise ImagingError("فونت پیدا نشد؛ مسیر فایل فونت یکان‌بخ را در APP_FONT بگذارید")
@@ -108,11 +129,12 @@ def render_card(photo: bytes, text: str, footer: str = "", logo_path=None, font_
     img = Image.alpha_composite(base.convert("RGBA"), shade)
     d = ImageDraw.Draw(img)
     pad, fs = int(size * 0.07), int(size * 0.062)
-    font = ImageFont.truetype(font_path, fs, layout_engine=ImageFont.Layout.RAQM)
+    font = _font(font_path, fs)
     lines = _wrap(d, text, font, size - 2 * pad)[:5]
     y = size - pad - int(size * 0.05) - len(lines) * int(fs * 1.55)
     for ln in lines:
-        d.text((size - pad, y), ln, font=font, fill="white", anchor="ra", direction="rtl", language="fa",
+        shaped, kw = _prep(ln)
+        d.text((size - pad, y), shaped, font=font, fill="white", anchor="ra", **kw,
                stroke_width=max(1, fs // 38), stroke_fill="white")  # light faux-bold: thin Persian fonts stay readable
         y += int(fs * 1.55)
     if footer:
