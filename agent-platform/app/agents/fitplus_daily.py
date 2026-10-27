@@ -29,7 +29,7 @@ CAPTION: متن پست (حداکثر ۷۰۰ نویسه، فوتر کانال ر�
 قواعد کیفیت: اولین خط یک تیتر جذاب و مشخص (نه کلی‌گویی)؛ ۳ تا ۵ خط کوتاه با مقدار، زمان یا ترتیب مشخص (مثلاً «یک کف دست مرغ»، «۳ ست ۱۲ تایی»)؛ یک ترفند عملی که همین امروز بشود انجامش داد؛ بدون جمله‌های کلی مثل «سلامتی مهم است».
 - موضوعات اخیر که تکرار نشوند: {recent}
 {extra}"""
-POSTER_SYSTEM = """تو تولیدکننده محتوای کانال بله اپلیکیشن ورزشی فیت‌پلاس هستی. قالب امروز: {fmt}.
+POSTER_SYSTEM = """تو تولیدکننده محتوای {who} هستی. قالب امروز: {fmt}.
 خروجی دقیقاً با این برچسب‌ها، هر کدام در یک خط جدا (CAPTION تا آخر ادامه دارد):
 TOPIC: موضوع کوتاه
 TITLE: تیتر اصلی پوستر (۲ تا ۴ کلمه، جذاب و مشخص)
@@ -45,19 +45,33 @@ CAPTION: متن پست (حداکثر ۶۰۰ نویسه، فوتر کانال ر�
 - متن‌های پوستر باید کوتاه، دقیق و املای فارسی کاملاً درست باشند؛ عدد فقط وقتی مقدار معمولی و مطمئن است (مثل ۳ ست، ۳۰ ثانیه).
 - موضوعات اخیر که تکرار نشوند: {recent}
 {extra}"""
-POSTER_PROMPT = """Design ONE complete, professional Persian (Farsi, right-to-left) social-media infographic poster, portrait 2:3, in the style of a premium health & fitness brand.
-Background: a real, bright, high-end photograph: {image} Soft depth of field, natural light, rich true colors.
+POSTER_PROMPT = """Create ONE finished, professional Persian (Farsi, right-to-left) social-media infographic poster, portrait 2:3, exactly in the style of premium Iranian health & fitness brand posts.
+PHOTOREALISM IS MANDATORY: the whole background is a single real, bright, high-end DSLR photograph (85mm, shallow depth of field, natural window light, true-to-life colors, real textures and water droplets): {image}
+Absolutely NO cartoon, NO illustration, NO vector art, NO 3D render, NO plastic or AI-looking gloss in the photograph. Only the UI elements (banner, cards, small icons) are graphic design, laid over the photo.
 Layout (all text in Persian, bold clean modern sans typeface, exactly as written):
-1. Top: a big bold title on a deep purple (#5B2FD0) painted brush-stroke banner, white text: "{title}". Directly below it a lime-green (#B5DB3A) strip with dark text: "{subtitle}".
-2. Top-right corner: the brand logo, a purple dumbbell icon with a small smile, with the wordmark "fitplusapp" in white/purple.
+1. Top: a big bold title on a bold painted brush-stroke banner in the brand main color, white text: "{title}". Directly below it a lime-green (#B5DB3A) strip with dark text: "{subtitle}".
+2. Top corner: the brand logo, {logo}, with the wordmark "{wordmark}".
 3. Left column: four rounded translucent white glass cards stacked, each with a glossy circular colored icon on the right side and a bold heading plus a one-line description:
    - {f1}
    - {f2}
    - {f3}
    - {f4}
 4. A wide rounded note box with a lightbulb icon: "نکته مهم: {tip}".
-5. Bottom: a dark indigo (#231B6B) rounded footer pill with the text "آنالیز رایگان و برنامه ورزشی اختصاصی فیت‌پلاس" and the handle "@Fitplusapp" in lime.
-Color palette: purple, indigo, lime green, white. Clean spacing, readable contrast, no clutter."""
+5. Bottom: {footer_pill}
+Color palette: {palette}. Clean spacing, readable contrast, no clutter."""
+BRANDS = {
+    "fitplus": {"who": "کانال بله اپلیکیشن ورزشی فیت‌پلاس", "logo": "a purple dumbbell icon with a small smile",
+                "wordmark": "fitplusapp",
+                "footer_pill": 'a dark indigo (#231B6B) rounded footer pill with the text "آنالیز رایگان و برنامه ورزشی اختصاصی فیت‌پلاس" and the handle "@Fitplusapp" in lime.',
+                "palette": "purple, indigo, lime green, white", "formats": FORMATS},
+    "drrezhim": {"who": "کانال بله «دکتر رژیم» (آموزش رژیم و لاغری، تغذیه سالم)",
+                 "logo": "a purple human figure with two green leaves", "wordmark": "دکتر رژیم",
+                 "footer_pill": 'a dark green (#14402B) rounded footer pill with the text "برای دریافت نکات بیشتر درباره تغذیه سالم و کاهش وزن، کانال ما را دنبال کنید" and the handle "@drrezhim" in yellow.',
+                 "palette": "deep green, purple, warm yellow, white",
+                 "formats": ["خواص یک میوه یا سبزی در رژیم", "یک وعده کامل و سالم", "یک نکته کاربردی کاهش وزن اصولی",
+                             "معرفی یک غذا یا میان‌وعده کم‌کالری", "اشتباه رایج رژیم و راه درست", "خواص یک ادویه یا دمنوش (محتاطانه)",
+                             "برنامه یک روز غذایی ساده"]},
+}
 _TAG = {k: re.compile(rf"^{k}:\s*(.+)$", re.M) for k in ("TOPIC", "CARD", "IMAGE")}
 
 
@@ -72,10 +86,11 @@ class FitplusDailyAgent(Agent):
     def generate(self, cfg, task, payload, photo_fn=None):
         rows = self.db.all("SELECT title FROM content_items WHERE agent_key=? AND title!='' "
                            "ORDER BY created_at DESC LIMIT 20", (cfg["key"],)) if self.db else []
-        fmt = FORMATS[utcnow().weekday()]
+        brand = BRANDS[cfg["policy"].get("brand") or "fitplus"]
+        fmt = brand["formats"][utcnow().weekday()]
         extra = f"دستور تکمیلی:\n{cfg['prompt']}" if cfg.get("prompt") else ""
         if (cfg["policy"].get("style") or "card") == "poster":
-            return self._poster(cfg, fmt, rows, extra, photo_fn)
+            return self._poster(cfg, fmt, rows, extra, photo_fn, brand)
         out = llm.get_client().complete(
             SYSTEM.format(fmt=fmt, recent="؛ ".join(r["title"] for r in rows) or "ندارد", extra=extra),
             "پست امروز را بنویس.", max_tokens=1200)
@@ -99,9 +114,9 @@ class FitplusDailyAgent(Agent):
         return [Draft(body=caption, title=found["TOPIC"].group(1).strip()[:100], kind="image_post",
                       meta={"image_path": str(path), "format": fmt})]
 
-    def _poster(self, cfg, fmt, rows, extra, poster_fn):
+    def _poster(self, cfg, fmt, rows, extra, poster_fn, brand):
         out = llm.get_client().complete(
-            POSTER_SYSTEM.format(fmt=fmt, recent="؛ ".join(r["title"] for r in rows) or "ندارد", extra=extra),
+            POSTER_SYSTEM.format(who=brand["who"], fmt=fmt, recent="؛ ".join(r["title"] for r in rows) or "ندارد", extra=extra),
             "پست امروز را بنویس.", max_tokens=1500)
         f = {k: r.search(out) for k, r in _PTAGS.items()}
         if not all(f.values()) or "CAPTION:" not in out:
@@ -115,7 +130,8 @@ class FitplusDailyAgent(Agent):
         facts = [f[f"FACT{i}"].group(1).strip().replace("|", " - ") for i in range(1, 5)]
         prompt = POSTER_PROMPT.format(image=f["IMAGE"].group(1).strip(), title=f["TITLE"].group(1).strip(),
                                       subtitle=f["SUBTITLE"].group(1).strip(), tip=f["TIP"].group(1).strip(),
-                                      f1=facts[0], f2=facts[1], f3=facts[2], f4=facts[3])
+                                      f1=facts[0], f2=facts[1], f3=facts[2], f4=facts[3], logo=brand["logo"],
+                                      wordmark=brand["wordmark"], footer_pill=brand["footer_pill"], palette=brand["palette"])
         try:
             png = (poster_fn or imaging.generate_poster)(prompt)
         except imaging.ImagingError as e:

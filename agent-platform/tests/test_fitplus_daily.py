@@ -59,6 +59,25 @@ class T(unittest.TestCase):
         self.assertIn("کدوحلوایی", seen["p"]); self.assertIn("fitplusapp", seen["p"])
         self.assertEqual(c["meta"]["style"], "poster")
 
+    def test_channels_are_pinned_and_never_shared(self):
+        ids = {}
+        for key in ("fitplus_daily", "drrezhim_daily"):
+            a = repo.get_agent(self.db, key)
+            ids[key] = repo.get_channel(self.db, a["channel_id"])["config"]["chat_id"]
+        self.assertEqual(ids, {"fitplus_daily": "@fitplusapp", "drrezhim_daily": "@drrezhim"})
+        self.assertEqual(len(set(ids.values())), 2)
+
+    def test_drrezhim_poster_uses_its_own_brand(self):
+        repo.update_agent(self.db, "drrezhim_daily", {"enabled": True}, actor=None)
+        seen = {}
+        def poster(prompt): seen["p"] = prompt; return fake_photo()
+        with mock.patch.object(imaging, "generate_poster", poster):
+            queue.enqueue(self.db, "run_agent", "drrezhim_daily", {"task": "default", "slot": "s"}, dedupe_key="s")
+            orchestrator.drain(self.db, "w", from_env())
+        self.assertIn("@drrezhim", seen["p"]); self.assertNotIn("@Fitplusapp", seen["p"])
+        c = repo.get_content(self.db, self.db.all("SELECT uid FROM content_items WHERE agent_key='drrezhim_daily'")[0]["uid"])
+        self.assertFalse(c["body"].rstrip().endswith("@Fitplusapp"))
+
     def test_missing_font_fails_clearly(self):
         with mock.patch.dict(os.environ, {"APP_FONT": "/nope.ttf"}), self.assertRaises(imaging.ImagingError):
             imaging.render_card(fake_photo(), "x")

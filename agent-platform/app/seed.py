@@ -37,6 +37,9 @@ AGENTS = [
      [{"type": "daily", "times": ["10:00"]}],
      {"review_terms": SENSITIVE_HEALTH, "forbid_links": True, "channel_tag": "@fitplusapp", "style": "poster",
       "footer": "⚡ آنالیز رایگان و برنامه ورزشی اختصاصی فیت‌پلاس\n⚡ @Fitplusbot\n\n🔷 آموزش نکات سلامتی و ورزش با\n💪 @Fitplusapp"}),
+    ("drrezhim_daily", "دکتر رژیم | پست روزانه بله", "fitplus_daily", "bale",
+     [{"type": "daily", "times": ["13:30"]}],
+     {"review_terms": SENSITIVE_HEALTH, "forbid_links": True, "style": "poster", "brand": "drrezhim", "footer": ""}),
     ("instagram_nutrition", "اینستاگرام تغذیه", "instagram_nutrition", "instagram",
      [{"type": "daily", "times": ["18:00"], "task": "reel"},
       {"type": "weekly", "days": [0, 2, 4], "times": ["12:00"], "task": "carousel"}],
@@ -65,6 +68,19 @@ AGENTS = [
 ]
 
 
+# Each publishing agent has its OWN Bale channel row; the chat ids must never be shared between agents.
+CHAT_IDS = {"fitplus_daily": "@fitplusapp", "drrezhim_daily": "@drrezhim"}
+
+
+def _pin_chat_ids(db):
+    for key, chat in CHAT_IDS.items():
+        a = repo.get_agent(db, key)
+        ch = repo.get_channel(db, a["channel_id"]) if a else None
+        if ch and not (ch.get("config") or {}).get("chat_id"):
+            repo.upsert_channel(db, ch["kind"], ch["name"], ch["project"], ch.get("signature", ""),
+                                {**(ch.get("config") or {}), "chat_id": chat})
+
+
 def ensure(db, with_demo: bool = True) -> None:
     """Create missing agents/channels; never overwrite what the admin has edited."""
     for key, title, agent_type, ch_kind, schedule, policy in AGENTS:
@@ -82,3 +98,4 @@ def ensure(db, with_demo: bool = True) -> None:
         repo.upsert_agent(db, "demo", title="ایجنت آزمایشی", agent_type="demo", enabled=True,
                           schedule=[], publish_mode="auto", channel_id=channel_id,
                           policy={"forbid_links": True})
+    _pin_chat_ids(db)
