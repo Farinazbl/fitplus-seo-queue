@@ -30,8 +30,9 @@ class YoutubeScriptAgent(Agent):
         rows = self.db.all("SELECT title FROM content_items WHERE agent_key=? AND title!='' "
                            "ORDER BY created_at DESC LIMIT 20", (cfg["key"],)) if self.db else []
         recent = "؛ ".join(r["title"] for r in rows) or "ندارد"
-        minutes = int(cfg.get("minutes", 12))
-        extra = f"دستور کانال:\n{cfg['prompt']}" if cfg.get("prompt") else ""
+        minutes = int(cfg["policy"].get("minutes", 12))
+        brief = "\n".join(x for x in (cfg["policy"].get("brief"), cfg.get("prompt")) if x)
+        extra = f"دستور کانال:\n{brief}" if brief else ""
         out = llm.get_client().complete(SYSTEM.format(minutes=minutes, recent=recent, extra=extra),
                                         "یک ایده جدید انتخاب کن و بسته کامل ویدئو را بنویس.", max_tokens=4000)
         found = {k: r.search(out) for k, r in _RE.items()}

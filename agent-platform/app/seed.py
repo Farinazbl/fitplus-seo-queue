@@ -41,13 +41,20 @@ AGENTS = [
       {"type": "weekly", "days": [0, 2, 4], "times": ["12:00"], "task": "carousel"}],
      {"review_terms": SENSITIVE_HEALTH}),
     ("youtube_kids", "یوتیوب ۱ | کارتون کودک انگلیسی", "youtube_script", "youtube",
-     [{"type": "every_n_days", "n": 2, "anchor": "2026-11-01", "times": ["17:00"]}], {}),
+     [{"type": "every_n_days", "n": 2, "anchor": "2026-11-01", "times": ["17:00"]}],
+     {"brief": "کانال کارتون کودک به زبان انگلیسی: سناریوی یک اپیزود کارتونی مناسب کودکان، با گفتگوی ساده انگلیسی، "
+               "ارزش‌های آموزشی، بدون خشونت و ترساندن، با رعایت حقوق نشر (شخصیت و داستان اصیل) و سیاست محتوای کودک. "
+               "عنوان و توضیحات به انگلیسی، دستور تولید به فارسی.", "minutes": 10}),
     ("youtube_health", "یوتیوب ۲ | رژیم و سلامت", "youtube_script", "youtube",
      [{"type": "every_n_days", "n": 2, "anchor": "2026-11-02", "times": ["17:00"]}],
-     {"review_terms": SENSITIVE_HEALTH}),
+     {"review_terms": SENSITIVE_HEALTH, "minutes": 12,
+      "brief": "کانال آموزش رژیم، تغذیه، سلامتی و کاهش وزن به‌صورت آموزش عمومی؛ توصیه‌ها محتاطانه و قابل راستی‌آزمایی، "
+               "بدون ادعای درمانی."}),
     ("youtube_finance", "یوتیوب ۳ | مالی و درآمد", "youtube_script", "youtube",
      [{"type": "every_n_days", "n": 2, "anchor": "2026-11-03", "times": ["17:00"]}],
-     {"review_terms": SENSITIVE_FINANCE, "forbid_terms": ["سود قطعی", "تضمین سود"]}),
+     {"review_terms": SENSITIVE_FINANCE, "forbid_terms": ["سود قطعی", "تضمین سود"], "minutes": 12,
+      "brief": "کانال آموزش نکات حسابداری، سرمایه‌گذاری و افزایش درآمد؛ ادعاها باید قابل راستی‌آزمایی باشند، "
+               "هیچ وعده سود یا درآمد قطعی نده و ریسک‌ها را بگو."}),
     ("campaign_manager", "کمپین منیجر", "campaign", "sms",
      [{"type": "event"}], {}),
     ("virtual_city", "اینستاگرام | شهر مجازی", "virtual_city", "instagram",
