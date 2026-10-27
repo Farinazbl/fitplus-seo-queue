@@ -197,7 +197,7 @@ def create_app(settings: Settings) -> Starlette:
         p, root = Path(path).resolve(), imaging.media_dir(settings.db_path).resolve()
         if root not in p.parents or not p.is_file():
             raise HTTPException(404, "فایل تصویر پیدا نشد")
-        return FileResponse(p, media_type="image/png")
+        return FileResponse(p, media_type="image/jpeg" if p.suffix == ".jpg" else "image/png")
 
     async def approvals_list(request):
         auth(request, "viewer")

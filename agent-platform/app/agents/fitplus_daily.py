@@ -137,7 +137,8 @@ class FitplusDailyAgent(Agent):
             png = (poster_fn or imaging.generate_poster)(prompt)
         except imaging.ImagingError as e:
             raise ValueError(str(e)) from None
-        path = imaging.media_dir(__import__("os").environ.get("APP_DB")) / f"{uuid.uuid4().hex}.png"
+        ext = "jpg" if png[:2] == b"\xff\xd8" else "png"
+        path = imaging.media_dir(__import__("os").environ.get("APP_DB")) / f"{uuid.uuid4().hex}.{ext}"
         path.write_bytes(png)
         return [Draft(body=caption, title=f["TOPIC"].group(1).strip()[:100], kind="image_post",
                       meta={"image_path": str(path), "format": fmt, "style": "poster"})]

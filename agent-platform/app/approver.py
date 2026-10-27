@@ -45,6 +45,11 @@ def _label(db, content):
     return cfg.get("title", content["agent_key"]), dest
 
 
+def _photo_part(path):
+    data = open(path, "rb").read()
+    return ("post.jpg", data, "image/jpeg") if data[:2] == b"\xff\xd8" else ("post.png", data, "image/png")
+
+
 def notify_pending(db, transport=http.request, multipart=http.post_multipart) -> int:
     token = os.environ.get("BALE_TOKEN")
     ids = approver_ids()
@@ -69,7 +74,7 @@ def notify_pending(db, transport=http.request, multipart=http.post_multipart) ->
             try:
                 if img and os.path.isfile(img):
                     # the photo goes alone; the full text + buttons follow (captions are limited to 1024 chars)
-                    multipart(API.format(token=token, method="sendPhoto"), {"chat_id": chat}, {"photo": ("post.png", open(img, "rb").read(), "image/png")})
+                    multipart(API.format(token=token, method="sendPhoto"), {"chat_id": chat}, {"photo": _photo_part(img)})
                 _call(token, "sendMessage", {"chat_id": chat, "text": text[:4000], "reply_markup": json.loads(kb)}, transport)
             except (http.HttpError, ValueError, KeyError) as e:
                 log.warning("approver notify failed for %s: %s", ap["id"], e)

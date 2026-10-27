@@ -59,7 +59,7 @@ class BaleConnector(Connector):
         short = caption if len(caption) <= CAPTION_MAX else ""
         try:
             raw = self.multipart(API.format(token=token, method="sendPhoto"),
-                                 {"chat_id": chat_id, "caption": short}, {"photo": ("post.png", data, "image/png")})
+                                 {"chat_id": chat_id, "caption": short}, {"photo": ("post.jpg", data, "image/jpeg") if data[:2] == b"\xff\xd8" else ("post.png", data, "image/png")})
             data = json.loads(raw)
             if not data.get("ok"):
                 raise PermanentError(f"پاسخ ناموفق بله: {raw[:150]}")

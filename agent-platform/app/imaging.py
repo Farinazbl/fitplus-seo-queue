@@ -60,25 +60,40 @@ def generate_photo(prompt: str, transport=http.request) -> bytes:
     raise ImagingError("تصویری برنگشت")
 
 
-def generate_poster(prompt: str, transport=http.request) -> bytes:
-    """A complete designed infographic poster (photo + Persian text + cards) straight from the image model."""
+def generate_poster(prompt: str, transport=http.request, tries: int = 4) -> bytes:
+    """A complete designed infographic poster (photo + Persian text + cards) straight from the image model.
+
+    Asks for JPEG (small response: big PNG downloads get cut on unstable links) and retries dropped connections.
+    """
+    import time
     key = os.environ.get("OPENAI_API_KEY")
     if not key:
         raise ImagingError("OPENAI_API_KEY برای ساخت تصویر تنظیم نشده است")
     body = {"model": os.environ.get("APP_IMAGE_MODEL", "gpt-image-2"), "prompt": f"{prompt}\n{SAFETY_POSTER}",
-            "size": os.environ.get("APP_POSTER_SIZE", "1024x1536"), "n": 1}
-    if body["model"].startswith("gpt-image"):
-        body["quality"] = os.environ.get("APP_IMAGE_QUALITY", "high")
-    try:
-        raw = transport("POST", IMAGES_URL, headers={"Authorization": f"Bearer {key}"}, json_body=body, timeout=300)
-        item = json.loads(raw)["data"][0]
-        if item.get("b64_json"):
-            return base64.b64decode(item["b64_json"])
-    except http.HttpError as e:
-        raise ImagingError(f"ساخت پوستر ناموفق: {e}") from None
-    except (KeyError, IndexError, ValueError, TypeError):
-        raise ImagingError("پاسخ نامعتبر از سرویس تصویر") from None
-    raise ImagingError("تصویری برنگشت")
+            "size": os.environ.get("APP_POSTER_SIZE", "1024x1536"), "n": 1,
+            "output_format": "jpeg", "output_compression": int(os.environ.get("APP_POSTER_JPEG_Q", "88"))}
+    if os.environ.get("APP_IMAGE_QUALITY"):
+        body["quality"] = os.environ["APP_IMAGE_QUALITY"]
+    last = ""
+    for i in range(tries):
+        try:
+            raw = transport("POST", IMAGES_URL, headers={"Authorization": f"Bearer {key}"}, json_body=body, timeout=240)
+            item = json.loads(raw)["data"][0]
+            if item.get("b64_json"):
+                return base64.b64decode(item["b64_json"])
+            raise ImagingError("تصویری برنگشت")
+        except http.HttpError as e:
+            last = str(e)
+            if e.status not in (0, 429) and e.status < 500:      # a real rejection: retrying will not help
+                raise ImagingError(f"ساخت پوستر ناموفق: {e}") from None
+            time.sleep(min(2 * (i + 1), 8) if tries > 1 and transport is http.request else 0)
+        except (KeyError, IndexError, ValueError, TypeError):
+            raise ImagingError("پاسخ نامعتبر از سرویس تصویر") from None
+        except Exception as e:  # noqa: BLE001 - http.client.IncompleteRead, SSL EOF etc. on a flaky link
+            if isinstance(e, ImagingError):
+                raise
+            last = f"{type(e).__name__}: {e}"
+    raise ImagingError(f"ساخت پوستر ناموفق پس از {tries} تلاش: {last}")
 
 
 def _latin_font(size):
