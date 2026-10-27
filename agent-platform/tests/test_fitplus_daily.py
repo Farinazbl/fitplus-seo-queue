@@ -56,6 +56,7 @@ class T(unittest.TestCase):
         self.assertEqual(c["status"], "pending_approval")
         self.assertTrue(os.path.isfile(c["meta"]["image_path"]))
         self.assertTrue(c["body"].rstrip().endswith("@Fitplusapp"))
+        self.assertIn("https://web.fitplusapp.com/", c["body"]); self.assertIn("هوشمندتر تمرین کن", c["body"])
         self.assertIn("کدوحلوایی", seen["p"]); self.assertIn("fitplusapp", seen["p"])
         self.assertEqual(c["meta"]["style"], "poster")
 
