@@ -84,6 +84,26 @@ _TAG = {k: re.compile(rf"^{k}:\s*(.+)$", re.M) for k in ("TOPIC", "CARD", "IMAGE
 _PTAGS = {k: re.compile(rf"^{k}:\s*(.+)$", re.M) for k in ("TOPIC", "TITLE", "SUBTITLE", "FACT1", "FACT2", "FACT3", "FACT4", "TIP", "IMAGE")}
 
 
+CAPTION_LIMIT = 1024   # Bale photo caption limit: post and caption must travel as ONE message
+
+
+def fit_caption(caption: str, footer: str) -> str:
+    """caption + fixed footer within one photo caption; trims middle lines, keeps the hashtag line."""
+    footer = (footer or "").strip()
+    budget = CAPTION_LIMIT - (len(footer) + 2 if footer else 0)
+    lines = caption.strip().splitlines()
+    tail = lines.pop() if len(lines) > 2 and lines[-1].lstrip().startswith("#") else ""
+    while lines and len("\n".join(lines + ([tail] if tail else []))) > budget:
+        if len(lines) > 2:
+            lines.pop()
+            while lines and not lines[-1].strip():
+                lines.pop()
+        else:
+            lines[-1] = lines[-1][: max(0, budget - len(tail) - 2)].rstrip()
+            break
+    body = "\n".join(lines + ([tail] if tail else []))[:budget].rstrip()
+    return f"{body}\n\n{footer}" if footer else body
+
 @register("fitplus_daily")
 class FitplusDailyAgent(Agent):
     def __init__(self, db=None):
@@ -109,8 +129,7 @@ class FitplusDailyAgent(Agent):
             raise ValueError("کپشن خیلی کوتاه است")
         tag = (cfg["policy"].get("channel_tag") or "").strip()
         footer = (cfg["policy"].get("footer") or "").strip()      # the channel's house footer (CTA + @ids)
-        if footer:
-            caption = f"{caption}\n\n{footer}"
+        caption = fit_caption(caption, footer)
         try:
             photo = (photo_fn or imaging.generate_photo)(found["IMAGE"].group(1).strip())
             png = imaging.render_card(photo, found["CARD"].group(1).strip(), footer=tag)
@@ -132,8 +151,7 @@ class FitplusDailyAgent(Agent):
         if len(caption) < 60:
             raise ValueError("کپشن خیلی کوتاه است")
         footer = (cfg["policy"].get("footer") or "").strip()
-        if footer:
-            caption = f"{caption}\n\n{footer}"
+        caption = fit_caption(caption, footer)
         facts = [f[f"FACT{i}"].group(1).strip().replace("|", " - ") for i in range(1, 5)]
         prompt = POSTER_PROMPT.format(image=f["IMAGE"].group(1).strip(), title=f["TITLE"].group(1).strip(),
                                       subtitle=f["SUBTITLE"].group(1).strip(), tip=f["TIP"].group(1).strip(),

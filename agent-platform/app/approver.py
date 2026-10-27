@@ -65,17 +65,23 @@ def notify_pending(db, transport=http.request, multipart=http.post_multipart) ->
         head = f"📝 پیش‌نویس جدید برای انتشار در {dest or 'کانال'}\n«{title}»"
         if ap.get("reasons"):
             head += "\n⚠️ نیازمند بررسی: " + "، ".join(ap["reasons"] if isinstance(ap["reasons"], list) else [str(ap["reasons"])])
-        text = f"{head}\n\n{content['body']}"
-        kb = json.dumps(_keyboard(ap["id"]))
+        body = content["body"]
+        kb = _keyboard(ap["id"])
         img = (content.get("meta") or {}).get("image_path")
         for chat in ids:
             if db.one("SELECT 1 FROM approver_notices WHERE approval_id=? AND chat_id=?", (ap["id"], chat)):
                 continue
             try:
-                if img and os.path.isfile(img):
-                    # the photo goes alone; the full text + buttons follow (captions are limited to 1024 chars)
-                    multipart(API.format(token=token, method="sendPhoto"), {"chat_id": chat}, {"photo": _photo_part(img)})
-                _call(token, "sendMessage", {"chat_id": chat, "text": text[:4000], "reply_markup": json.loads(kb)}, transport)
+                _call(token, "sendMessage", {"chat_id": chat, "text": head[:4000]}, transport)
+                if img and os.path.isfile(img) and len(body) <= 1024:
+                    # exactly what will be published: photo + caption in one message, buttons on it
+                    multipart(API.format(token=token, method="sendPhoto"),
+                              {"chat_id": chat, "caption": body, "reply_markup": json.dumps(kb)},
+                              {"photo": _photo_part(img)})
+                else:
+                    if img and os.path.isfile(img):
+                        multipart(API.format(token=token, method="sendPhoto"), {"chat_id": chat}, {"photo": _photo_part(img)})
+                    _call(token, "sendMessage", {"chat_id": chat, "text": body[:4000], "reply_markup": kb}, transport)
             except (http.HttpError, ValueError, KeyError) as e:
                 log.warning("approver notify failed for %s: %s", ap["id"], e)
                 continue
