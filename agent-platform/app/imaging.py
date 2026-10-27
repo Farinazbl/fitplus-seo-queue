@@ -23,6 +23,11 @@ SAFETY = ("Natural, high-quality photograph, realistic lighting. If any people a
           "no watermarks, no nudity.")
 
 
+SAFETY_POSTER = ("If any people appear they must be adult men, fully clothed (or a woman fully covered with hijab). "
+                 "No nudity. Every Persian word must be spelled exactly as given, with correct letter joining and "
+                 "right-to-left order; do not add, drop or invent any text.")
+
+
 class ImagingError(Exception):
     pass
 
@@ -50,6 +55,27 @@ def generate_photo(prompt: str, transport=http.request) -> bytes:
             raise ImagingError("سرویس تصویر به‌جای فایل، آدرس برگرداند؛ مدل تصویر را عوض کنید")
     except http.HttpError as e:
         raise ImagingError(f"ساخت تصویر ناموفق: {e}") from None
+    except (KeyError, IndexError, ValueError, TypeError):
+        raise ImagingError("پاسخ نامعتبر از سرویس تصویر") from None
+    raise ImagingError("تصویری برنگشت")
+
+
+def generate_poster(prompt: str, transport=http.request) -> bytes:
+    """A complete designed infographic poster (photo + Persian text + cards) straight from the image model."""
+    key = os.environ.get("OPENAI_API_KEY")
+    if not key:
+        raise ImagingError("OPENAI_API_KEY برای ساخت تصویر تنظیم نشده است")
+    body = {"model": os.environ.get("APP_IMAGE_MODEL", "gpt-image-2"), "prompt": f"{prompt}\n{SAFETY_POSTER}",
+            "size": os.environ.get("APP_POSTER_SIZE", "1024x1536"), "n": 1}
+    if body["model"].startswith("gpt-image"):
+        body["quality"] = os.environ.get("APP_IMAGE_QUALITY", "high")
+    try:
+        raw = transport("POST", IMAGES_URL, headers={"Authorization": f"Bearer {key}"}, json_body=body, timeout=300)
+        item = json.loads(raw)["data"][0]
+        if item.get("b64_json"):
+            return base64.b64decode(item["b64_json"])
+    except http.HttpError as e:
+        raise ImagingError(f"ساخت پوستر ناموفق: {e}") from None
     except (KeyError, IndexError, ValueError, TypeError):
         raise ImagingError("پاسخ نامعتبر از سرویس تصویر") from None
     raise ImagingError("تصویری برنگشت")

@@ -16,8 +16,15 @@ def fake_photo():
     b = io.BytesIO(); Image.new("RGB", (640, 480), (90, 140, 70)).save(b, "PNG"); return b.getvalue()
 
 
+POUT = ("TOPIC: کدوحلوایی\nTITLE: کدوحلوایی\nSUBTITLE: دوست رژیم شما در پاییز\nFACT1: سلامت چشم | غنی از بتاکاروتن\n"
+        "FACT2: سیری | فیبر بالا\nFACT3: گوارش | کمک به روده\nFACT4: کم‌کالری | مناسب رژیم\nTIP: با کمی دارچین میان‌وعده‌ی پاییزی بساز\n"
+        "IMAGE: roasted pumpkin cubes in a stoneware bowl on a rustic table, soft window light\n"
+        "CAPTION: 🎃 کدوحلوایی پخته یک میان‌وعده‌ی سبک و خوشمزه است. با کمی دارچین و مغز تخمه سرو کنید و لذت ببرید. "
+        "برای شرایط خاص با پزشک یا متخصص مشورت کنید.")
+
+
 class Fake:
-    def complete(self, s, u, max_tokens=0): return OUT
+    def complete(self, s, u, max_tokens=0): return POUT if "TITLE:" in s else OUT
 
 
 @unittest.skipUnless(os.path.exists(FONT), "font missing")
@@ -38,7 +45,9 @@ class T(unittest.TestCase):
         im = Image.open(io.BytesIO(png)); self.assertEqual(im.size, (1080, 1080))
 
     def test_agent_creates_pending_image_post(self):
-        with mock.patch.object(imaging, "generate_photo", lambda prompt: fake_photo()):
+        seen = {}
+        def poster(prompt): seen["p"] = prompt; return fake_photo()
+        with mock.patch.object(imaging, "generate_poster", poster):
             queue.enqueue(self.db, "run_agent", "fitplus_daily", {"task": "default", "slot": "s"}, dedupe_key="s")
             orchestrator.drain(self.db, "w", from_env())
         items = self.db.all("SELECT * FROM content_items WHERE agent_key='fitplus_daily'")
@@ -47,6 +56,8 @@ class T(unittest.TestCase):
         self.assertEqual(c["status"], "pending_approval")
         self.assertTrue(os.path.isfile(c["meta"]["image_path"]))
         self.assertTrue(c["body"].rstrip().endswith("@Fitplusapp"))
+        self.assertIn("کدوحلوایی", seen["p"]); self.assertIn("fitplusapp", seen["p"])
+        self.assertEqual(c["meta"]["style"], "poster")
 
     def test_missing_font_fails_clearly(self):
         with mock.patch.dict(os.environ, {"APP_FONT": "/nope.ttf"}), self.assertRaises(imaging.ImagingError):

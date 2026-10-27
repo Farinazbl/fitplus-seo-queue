@@ -35,7 +35,7 @@ AGENTS = [
      [{"type": "external"}], {}),
     ("fitplus_daily", "فیت‌پلاس | پست روزانه بله", "fitplus_daily", "bale",
      [{"type": "daily", "times": ["10:00"]}],
-     {"review_terms": SENSITIVE_HEALTH, "forbid_links": True, "channel_tag": "@fitplusapp",
+     {"review_terms": SENSITIVE_HEALTH, "forbid_links": True, "channel_tag": "@fitplusapp", "style": "poster",
       "footer": "⚡ آنالیز رایگان و برنامه ورزشی اختصاصی فیت‌پلاس\n⚡ @Fitplusbot\n\n🔷 آموزش نکات سلامتی و ورزش با\n💪 @Fitplusapp"}),
     ("instagram_nutrition", "اینستاگرام تغذیه", "instagram_nutrition", "instagram",
      [{"type": "daily", "times": ["18:00"], "task": "reel"},
