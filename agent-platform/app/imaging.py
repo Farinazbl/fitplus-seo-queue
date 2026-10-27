@@ -6,6 +6,7 @@ The image API key is the same OPENAI_API_KEY; model via APP_IMAGE_MODEL.
 """
 import base64
 import io
+import urllib.error
 import json
 import os
 from pathlib import Path
@@ -60,6 +61,35 @@ def generate_photo(prompt: str, transport=http.request) -> bytes:
     raise ImagingError("تصویری برنگشت")
 
 
+def _stream_image(key: str, body: dict, timeout: int = 300) -> bytes:
+    """Streamed generation: bytes keep flowing, so links that cut silent connections after ~10 s don't kill it."""
+    import urllib.request
+    req = urllib.request.Request(IMAGES_URL, data=json.dumps({**body, "stream": True, "partial_images": 1}).encode(),
+                                 method="POST", headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json",
+                                                         "Accept": "text/event-stream", "User-Agent": "agent-platform/1.0"})
+    final = partial = None
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            for raw in r:
+                line = raw.decode("utf-8", "replace").strip()
+                if not line.startswith("data:") or line.endswith("[DONE]"):
+                    continue
+                ev = json.loads(line[5:])
+                if ev.get("type", "").endswith("completed") and ev.get("b64_json"):
+                    final = ev["b64_json"]
+                elif ev.get("b64_json"):
+                    partial = ev["b64_json"]
+                elif ev.get("error"):
+                    raise ImagingError(f"خطای سرویس تصویر: {str(ev['error'])[:150]}")
+    except urllib.error.HTTPError as e:
+        raise http.HttpError(e.code, e.read().decode("utf-8", "replace")) from None
+    except (urllib.error.URLError, OSError, ValueError) as e:
+        raise http.HttpError(0, f"{type(e).__name__}: {e}") from None
+    if final:
+        return base64.b64decode(final)
+    raise http.HttpError(0, "جریان تصویر ناقص ماند" + (" (فقط پیش‌نمایش رسید)" if partial else ""))
+
+
 def generate_poster(prompt: str, transport=http.request, tries: int = 4) -> bytes:
     """A complete designed infographic poster (photo + Persian text + cards) straight from the image model.
 
@@ -77,6 +107,8 @@ def generate_poster(prompt: str, transport=http.request, tries: int = 4) -> byte
     last = ""
     for i in range(tries):
         try:
+            if transport is http.request:
+                return _stream_image(key, body)
             raw = transport("POST", IMAGES_URL, headers={"Authorization": f"Bearer {key}"}, json_body=body, timeout=240)
             item = json.loads(raw)["data"][0]
             if item.get("b64_json"):
