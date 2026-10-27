@@ -87,7 +87,8 @@ class FitplusDailyAgent(Agent):
         rows = self.db.all("SELECT title FROM content_items WHERE agent_key=? AND title!='' "
                            "ORDER BY created_at DESC LIMIT 20", (cfg["key"],)) if self.db else []
         brand = BRANDS[cfg["policy"].get("brand") or "fitplus"]
-        fmt = brand["formats"][utcnow().weekday()]
+        now = utcnow()
+        fmt = brand["formats"][(now.weekday() * 3 + now.hour // 8) % len(brand["formats"])]   # 3 posts/day differ
         extra = f"دستور تکمیلی:\n{cfg['prompt']}" if cfg.get("prompt") else ""
         if (cfg["policy"].get("style") or "card") == "poster":
             return self._poster(cfg, fmt, rows, extra, photo_fn, brand)

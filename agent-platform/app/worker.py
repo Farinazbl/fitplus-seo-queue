@@ -10,7 +10,7 @@ import signal
 import socket
 import time
 
-from . import campaign, config, orchestrator, queue, repo, scheduler, seed
+from . import approver, campaign, config, orchestrator, queue, repo, scheduler, seed
 from .connectors import sms
 from .db import DB
 
@@ -26,6 +26,11 @@ def cycle(db, settings, worker_id: str) -> int:
         st = campaign.dispatch(db, sms.get_provider(), cm, tz_name=settings.timezone)
         if any(st.values()):
             log.info("campaign dispatch %s", st)
+    try:                                   # approvals inside Bale (needs BALE_TOKEN + APPROVER_IDS)
+        approver.poll(db)
+        approver.notify_pending(db)
+    except Exception:  # noqa: BLE001
+        log.exception("approver cycle failed")
     results = orchestrator.drain(db, worker_id, settings)
     for r in results:
         log.info("job %s %s -> %s %s", r["job_id"], r["kind"], r["status"], r.get("note") or r.get("error", ""))

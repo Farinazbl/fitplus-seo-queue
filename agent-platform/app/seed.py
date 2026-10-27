@@ -34,11 +34,11 @@ AGENTS = [
     ("fitplus", "فیت پلاس | بله", "monitor", "bale",
      [{"type": "external"}], {}),
     ("fitplus_daily", "فیت‌پلاس | پست روزانه بله", "fitplus_daily", "bale",
-     [{"type": "daily", "times": ["10:00"]}],
+     [{"type": "daily", "times": ["07:45", "12:15", "19:45"]}],   # ready ~15-45 min before the busy hours
      {"review_terms": SENSITIVE_HEALTH, "forbid_links": True, "channel_tag": "@fitplusapp", "style": "poster",
       "footer": "⚡ آنالیز رایگان و برنامه ورزشی اختصاصی فیت‌پلاس\n⚡ @Fitplusbot\n\n🔷 آموزش نکات سلامتی و ورزش با\n💪 @Fitplusapp"}),
     ("drrezhim_daily", "دکتر رژیم | پست روزانه بله", "fitplus_daily", "bale",
-     [{"type": "daily", "times": ["13:30"]}],
+     [{"type": "daily", "times": ["08:15", "12:45", "20:15"]}],
      {"review_terms": SENSITIVE_HEALTH, "forbid_links": True, "style": "poster", "brand": "drrezhim", "footer": ""}),
     ("instagram_nutrition", "اینستاگرام تغذیه", "instagram_nutrition", "instagram",
      [{"type": "daily", "times": ["18:00"], "task": "reel"},
