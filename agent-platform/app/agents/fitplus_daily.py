@@ -40,7 +40,7 @@ FACT3: عنوان | توضیح
 FACT4: عنوان | توضیح
 TIP: یک نکته‌ی مهم یا ترفند عملی (حداکثر ۱۸ کلمه)
 IMAGE: English, 2 sentences: the exact real photograph for the background (real fresh whole ingredients on a rustic table with soft window light and blurred green plants; or, for exercise topics, a fit adult man fully clothed in a modern gym performing the move)
-CAPTION: متن پست (حداکثر ۶۰۰ نویسه، فوتر کانال را خودت ننویس)، ساده و دوستانه، یک ایموجی در شروع
+CAPTION: {caption_hint}
 - ادعای درمانی قطعی، وعده کاهش وزن مشخص و آمار یا پژوهش مطمئن‌نشده ننویس. دارو توصیه نکن. لینک نساز.
 - ادعاهای «سم‌زدایی»، «چربی‌سوزی»، «افزایش سوخت‌وساز» و مقدار دقیق مصرف روزانه (مثل ۸ لیوان) ننویس؛ جمله‌ها محتاطانه و عمومی باشند.
 - متن‌های پوستر باید کوتاه، دقیق و املای فارسی کاملاً درست باشند؛ عدد فقط وقتی مقدار معمولی و مطمئن است (مثل ۳ ست، ۳۰ ثانیه).
@@ -64,11 +64,16 @@ BRANDS = {
     "fitplus": {"who": "کانال بله اپلیکیشن ورزشی فیت‌پلاس", "logo": "a purple dumbbell icon with a small smile",
                 "wordmark": "fitplusapp",
                 "footer_pill": 'a dark indigo (#231B6B) rounded footer pill with the text "آنالیز رایگان و برنامه ورزشی اختصاصی فیت‌پلاس" and the handle "@Fitplusapp" in lime.',
-                "palette": "purple, indigo, lime green, white", "formats": FORMATS},
+                "palette": "purple, indigo, lime green, white", "formats": FORMATS,
+                "caption_hint": "متن پست (حداکثر ۶۰۰ نویسه، فوتر کانال را خودت ننویس)، ساده و دوستانه، یک ایموجی در شروع"},
     "drrezhim": {"who": "کانال بله «دکتر رژیم» (آموزش رژیم و لاغری، تغذیه سالم)",
                  "logo": "a purple human figure with two green leaves", "wordmark": "دکتر رژیم",
                  "footer_pill": 'a dark green (#14402B) rounded footer pill with the text "برای دریافت نکات بیشتر درباره تغذیه سالم و کاهش وزن، کانال ما را دنبال کنید" and the handle "@drrezhim" in yellow.',
                  "palette": "deep green, purple, warm yellow, white",
+                 "caption_hint": ("کپشن به سبک دقیق کانال: خط اول عنوان جذاب با «؛» (مثل «آب؛ ساده‌ترین همراه رژیم لاغری!»)، یک جمله‌ی کنجکاوی‌برانگیز "
+                                  "که با «می‌دونستی» شروع می‌شود، «۵ خاصیت مهم X:» یا ۴ تا ۵ مورد کوتاه به شکل «عنوان: توضیح» با لحن صمیمی (تو، می‌تونه، می‌کنه)، "
+                                  "یک «پیشنهاد رژیمی» یا «ترفند» عملی، یک «نکته رژیمی/یادت باشه» محتاطانه که بگوید هیچ خوراکی به‌تنهایی چربی‌سوز نیست، "
+                                  "یک سؤال تعاملی کوتاه، و در آخر ۴ تا ۷ هشتگ فارسی (مثل #تغذیه_سالم #لاغری #کاهش_وزن #دکتر_رژیم). فوتر را خودت ننویس؛ حداکثر ۹۰۰ نویسه."),
                  "formats": ["خواص یک میوه یا سبزی در رژیم", "یک وعده کامل و سالم", "یک نکته کاربردی کاهش وزن اصولی",
                              "معرفی یک غذا یا میان‌وعده کم‌کالری", "اشتباه رایج رژیم و راه درست", "خواص یک ادویه یا دمنوش (محتاطانه)",
                              "برنامه یک روز غذایی ساده"]},
@@ -118,7 +123,7 @@ class FitplusDailyAgent(Agent):
 
     def _poster(self, cfg, fmt, rows, extra, poster_fn, brand):
         out = llm.get_client().complete(
-            POSTER_SYSTEM.format(who=brand["who"], fmt=fmt, recent="؛ ".join(r["title"] for r in rows) or "ندارد", extra=extra),
+            POSTER_SYSTEM.format(who=brand["who"], caption_hint=brand["caption_hint"], fmt=fmt, recent="؛ ".join(r["title"] for r in rows) or "ندارد", extra=extra),
             "پست امروز را بنویس.", max_tokens=1500)
         f = {k: r.search(out) for k, r in _PTAGS.items()}
         if not all(f.values()) or "CAPTION:" not in out:

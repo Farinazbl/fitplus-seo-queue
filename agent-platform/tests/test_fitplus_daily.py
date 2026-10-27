@@ -77,6 +77,8 @@ class T(unittest.TestCase):
         self.assertIn("@drrezhim", seen["p"]); self.assertNotIn("@Fitplusapp", seen["p"])
         c = repo.get_content(self.db, self.db.all("SELECT uid FROM content_items WHERE agent_key='drrezhim_daily'")[0]["uid"])
         self.assertFalse(c["body"].rstrip().endswith("@Fitplusapp"))
+        self.assertTrue(c["body"].rstrip().endswith("@Drrezhim"))
+        self.assertIn("همیشه همراهته", c["body"])
 
     def test_missing_font_fails_clearly(self):
         with mock.patch.dict(os.environ, {"APP_FONT": "/nope.ttf"}), self.assertRaises(imaging.ImagingError):
