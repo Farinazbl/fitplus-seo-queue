@@ -46,7 +46,7 @@ class T(unittest.TestCase):
         c = repo.get_content(self.db, items[0]["uid"])
         self.assertEqual(c["status"], "pending_approval")
         self.assertTrue(os.path.isfile(c["meta"]["image_path"]))
-        self.assertTrue(c["body"].rstrip().endswith("@fitplusapp"))
+        self.assertTrue(c["body"].rstrip().endswith("@Fitplusapp"))
 
     def test_missing_font_fails_clearly(self):
         with mock.patch.dict(os.environ, {"APP_FONT": "/nope.ttf"}), self.assertRaises(imaging.ImagingError):

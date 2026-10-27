@@ -2,7 +2,7 @@
 
 Weekly rotation of formats (by weekday): recipe, healthy food, exercise, vegetable benefits, diet tip, ...
 Goes through the approval queue (a channel admin approves each post), then Bale ``sendPhoto``.
-Settings in ``policy``: ``channel_tag`` (e.g. "@fitplusapp", appended to the caption).
+Settings in ``policy``: ``channel_tag`` (printed on the image), ``footer`` (house footer appended to the caption).
 """
 import re
 import uuid
@@ -20,9 +20,13 @@ SYSTEM = """تو تولیدکننده محتوای کانال بله اپلیک�
 TOPIC: موضوع کوتاه
 CARD: جمله کوتاه روی تصویر (حداکثر ۱۲ کلمه)
 IMAGE: توضیح انگلیسی دقیق یک عکس حرفه‌ای (۲ تا ۳ جمله): نام دقیق مواد غذایی واقعی و تازه، ظرف و سطح چیدمان، زاویه دوربین؛ بدون متن روی عکس
-CAPTION: متن پست (حداکثر ۹۰۰ نویسه)، ساده و دوستانه، یک ایموجی مناسب در شروع
+CAPTION: متن پست (حداکثر ۷۰۰ نویسه، فوتر کانال را خودت ننویس)، ساده و دوستانه، یک ایموجی مناسب در شروع
 - ادعای درمانی قطعی، وعده کاهش وزن مشخص و آمار یا پژوهش مطمئن‌نشده ننویس. دارو و درمان توصیه نکن.
 - لینک نساز. آخر کپشن یک جمله «برای شرایط خاص با پزشک یا متخصص مشورت کنید» بیاور.
+سبک کانال (دوستانه، خودمانی، کوتاه و کاربردی؛ مثل نمونه‌های زیر):
+«سالاد پروتئینی ۱۰ دقیقه‌ای — مواد لازم: کاهو و سبزیجات برگ‌سبز، گوجه، خیار و فلفل رنگی، یک کف دست مرغ گریل یا نخود پخته، کمی پنیر کم‌چرب، یک قاشق روغن زیتون + آبلیمو. همه رو مخلوط کن؛ یک وعده‌ی سبک، سیرکننده و پروتئینی آماده‌ست.»
+«فلفل دلمه‌ای رنگی؛ ویتامین C بیشتر از پرتقال! — کالری کم و ترد، مناسب میان‌وعده؛ خام توی سالاد یا تفت سریع کنار مرغ. هرچی رنگ بشقابت متنوع‌تر، مواد مغذی متنوع‌تر.»
+قواعد کیفیت: اولین خط یک تیتر جذاب و مشخص (نه کلی‌گویی)؛ ۳ تا ۵ خط کوتاه با مقدار، زمان یا ترتیب مشخص (مثلاً «یک کف دست مرغ»، «۳ ست ۱۲ تایی»)؛ یک ترفند عملی که همین امروز بشود انجامش داد؛ بدون جمله‌های کلی مثل «سلامتی مهم است».
 - موضوعات اخیر که تکرار نشوند: {recent}
 {extra}"""
 _TAG = {k: re.compile(rf"^{k}:\s*(.+)$", re.M) for k in ("TOPIC", "CARD", "IMAGE")}
@@ -48,8 +52,9 @@ class FitplusDailyAgent(Agent):
         if len(caption) < 60:
             raise ValueError("کپشن خیلی کوتاه است")
         tag = (cfg["policy"].get("channel_tag") or "").strip()
-        if tag:
-            caption = f"{caption}\n\n{tag}"
+        footer = (cfg["policy"].get("footer") or "").strip()      # the channel's house footer (CTA + @ids)
+        if footer:
+            caption = f"{caption}\n\n{footer}"
         try:
             photo = (photo_fn or imaging.generate_photo)(found["IMAGE"].group(1).strip())
             png = imaging.render_card(photo, found["CARD"].group(1).strip(), footer=tag)
