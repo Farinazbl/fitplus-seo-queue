@@ -42,6 +42,7 @@ TIP: یک نکته‌ی مهم یا ترفند عملی (حداکثر ۱۸ کل�
 IMAGE: English, 2 sentences: the exact real photograph for the background (real fresh whole ingredients on a rustic table with soft window light and blurred green plants; or, for exercise topics, a fit adult man fully clothed in a modern gym performing the move)
 CAPTION: متن پست (حداکثر ۶۰۰ نویسه، فوتر کانال را خودت ننویس)، ساده و دوستانه، یک ایموجی در شروع
 - ادعای درمانی قطعی، وعده کاهش وزن مشخص و آمار یا پژوهش مطمئن‌نشده ننویس. دارو توصیه نکن. لینک نساز.
+- ادعاهای «سم‌زدایی»، «چربی‌سوزی»، «افزایش سوخت‌وساز» و مقدار دقیق مصرف روزانه (مثل ۸ لیوان) ننویس؛ جمله‌ها محتاطانه و عمومی باشند.
 - متن‌های پوستر باید کوتاه، دقیق و املای فارسی کاملاً درست باشند؛ عدد فقط وقتی مقدار معمولی و مطمئن است (مثل ۳ ست، ۳۰ ثانیه).
 - موضوعات اخیر که تکرار نشوند: {recent}
 {extra}"""
