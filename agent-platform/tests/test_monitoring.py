@@ -98,7 +98,8 @@ class CalendarTests(unittest.TestCase):
         self.assertEqual(len(tax), 8)                              # 09:00 today .. 09:00 in 7 days
         self.assertTrue(tax[0]["at"].startswith("2026-10-26T09:00"))
         seo = [(c["at"][:10], c["task"]) for c in cal if c["agent"] == "seo"]
-        self.assertEqual(seo, [("2026-10-27", "article"), ("2026-10-30", "article"), ("2026-10-31", "weekly_report")])
+        self.assertEqual(seo, [("2026-10-26", "article"), ("2026-10-28", "article"), ("2026-10-29", "article"),
+                               ("2026-10-31", "article"), ("2026-11-01", "weekly_report"), ("2026-11-02", "article")])   # 4 articles/week
         self.assertEqual([c["at"] for c in cal], sorted(c["at"] for c in cal))
         self.assertNotIn("youtube_kids", {c["agent"] for c in cal})
 

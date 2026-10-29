@@ -103,3 +103,11 @@ class T(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PolicyPrefixTests(unittest.TestCase):
+    def test_own_site_article_link_allowed_others_not(self):
+        from app import policy
+        p = {"forbid_links": True, "allowed_link_prefixes": ["https://fitplusapp.com/"]}
+        self.assertEqual(policy.check(p, "بخوانید https://fitplusapp.com/plank-guide/ عالی")[0], [])
+        self.assertTrue(policy.check(p, "https://other.com/x")[0])

@@ -7,6 +7,7 @@ the sensitive-content routing for health/finance are edited from the dashboard.
 Supported keys:
     forbid_links        bool   reject text containing URLs / t.me / ble.ir links
     allowed_links       list   exact strings exempt from forbid_links (the brand's own link)
+    allowed_link_prefixes list URL prefixes exempt from forbid_links, any path after them (own site articles)
     forbid_mentions     bool   reject @handles (the channel signature is added later)
     forbid_terms        list   reject if any term appears (e.g. course promotion)
     forbid_source_names list   reject if a source channel/site is named
@@ -31,6 +32,8 @@ def check(policy: dict, text: str):
     link_text = text
     for ok in policy.get("allowed_links", []):          # the brand's own fixed links (e.g. its web app) are fine
         link_text = link_text.replace(ok, "")
+    for pre in policy.get("allowed_link_prefixes", []):  # the brand's own site pages (any path)
+        link_text = re.sub(re.escape(pre) + r"\S*", "", link_text)
     if policy.get("forbid_links") and _LINK.search(link_text):
         violations.append("متن شامل لینک یا نشانی اینترنتی است")
     if policy.get("forbid_mentions") and _MENTION.search(text):

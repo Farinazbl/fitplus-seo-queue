@@ -21,8 +21,8 @@ SENSITIVE_FINANCE = ["سود قطعی", "تضمین سود", "بدون ریسک"
 # (key, title, agent_type, channel kind, schedule, policy)
 AGENTS = [
     ("seo", "سئو", "seo_article", "wordpress",
-     [{"type": "weekly", "days": [1, 4], "times": ["10:00"], "task": "article"},
-      {"type": "weekly", "days": [5], "times": ["09:00"], "task": "weekly_report"}], {}),
+     [{"type": "weekly", "days": [5, 0, 2, 3], "times": ["10:00"], "task": "article"},   # Sat Mon Wed Thu: 4 articles/week
+      {"type": "weekly", "days": [6], "times": ["09:00"], "task": "weekly_report"}], {}),
     ("bale_tax", "مؤدیان مالیاتی | بله", "news_rewrite", "bale",
      [{"type": "daily", "times": ["09:00"]}],
      {**TAX_POLICY, "topic": "اخبار و نکات مالیاتی برای مؤدیان"}),
@@ -37,6 +37,7 @@ AGENTS = [
      [{"type": "daily", "times": ["07:45", "12:15", "19:45"]}],   # ready ~15-45 min before the busy hours
      {"review_terms": SENSITIVE_HEALTH, "forbid_links": True, "channel_tag": "@fitplusapp", "style": "poster",
       "allowed_links": ["https://web.fitplusapp.com/"],
+      "allowed_link_prefixes": ["https://fitplusapp.com/"],   # the brand's own articles
       "footer": "با فیت‌پلاس هوشمندتر تمرین کن!\nورود به فیت‌پلاس: https://web.fitplusapp.com/\n\n⚡ آنالیز رایگان و برنامه ورزشی اختصاصی فیت‌پلاس\n⚡ @Fitplusbot\n\n🔷 آموزش نکات سلامتی و ورزش با\n💪 @Fitplusapp"}),
     ("drrezhim_daily", "دکتر رژیم | پست روزانه بله", "fitplus_daily", "bale",
      [{"type": "daily", "times": ["08:15", "12:45", "20:15"]}],
