@@ -1,74 +1,80 @@
 [
- {
-  "slug": "ready-vs-personalized-workout-plan",
-  "title": "تفاوت برنامه تمرینی آماده با برنامه اختصاصی",
-  "url": "https://fitplusapp.com/ready-vs-personalized-workout-plan/",
-  "category": 38
- },
- {
-  "slug": "home-workout-plan-for-beginners",
-  "title": "برنامه ورزشی در خانه برای مبتدی‌ها",
-  "url": "https://fitplusapp.com/home-workout-plan-for-beginners/",
-  "category": 38
- },
- {
-  "slug": "weight-loss-meal-plan",
-  "title": "برنامه غذایی برای کاهش وزن",
-  "url": "https://fitplusapp.com/weight-loss-meal-plan/",
-  "category": 48
- },
- {
-  "slug": "mushroom-benefits-bodybuilding-weight-loss",
-  "title": "فواید قارچ در بدنسازی و لاغری",
-  "url": "https://fitplusapp.com/mushroom-benefits-bodybuilding-weight-loss/",
-  "category": 1
- },
- {
-  "slug": "exercise-to-stay-young",
-  "title": "با ورزش کردن، جوان بمانید",
-  "url": "https://fitplusapp.com/exercise-to-stay-young/",
-  "category": 1
- },
- {
-  "slug": "broccoli-benefits-weight-loss",
-  "title": "خواص بروکلی در لاغری",
-  "url": "https://fitplusapp.com/broccoli-benefits-weight-loss/",
-  "category": 1
- },
- {
-  "slug": "belly-and-love-handles-fat-loss-exercises",
-  "title": "ورزش برای کاهش شکم و پهلو؛ بهترین حرکات و برنامه هفتگی",
-  "url": "https://fitplusapp.com/belly-and-love-handles-fat-loss-exercises/",
-  "category": 38
- },
- {
-  "slug": "how-many-days-a-week-to-workout",
-  "title": "چند روز در هفته ورزش کنیم؟ راهنمای کامل بر اساس هدف",
-  "url": "https://fitplusapp.com/how-many-days-a-week-to-workout/",
-  "category": 38
- },
- {
-  "slug": "daily-calorie-needs",
-  "title": "کالری مورد نیاز روزانه؛ روش محاسبه دقیق و جدول ضریب فعالیت",
-  "url": "https://fitplusapp.com/daily-calorie-needs/",
-  "category": 48
- },
- {
-  "slug": "protein-for-muscle-building",
-  "title": "پروتئین برای عضله‌سازی؛ مقدار روزانه، بهترین منابع و زمان مصرف",
-  "url": "https://fitplusapp.com/protein-for-muscle-building/",
-  "category": 48
- },
- {
-  "slug": "beginner-gym-workout-plan",
-  "title": "برنامه بدنسازی مبتدی در باشگاه؛ برنامه سه‌روزه فول‌بادی با جدول ست و تکرار",
-  "url": "https://fitplusapp.com/beginner-gym-workout-plan/",
-  "category": 38
- },
- {
-  "slug": "walking-for-weight-loss",
-  "title": "پیاده‌روی برای لاغری؛ روزی چقدر راه برویم و برنامه هفتگی",
-  "url": "https://fitplusapp.com/walking-for-weight-loss/",
-  "category": 38
- }
+  {
+    "slug": "ready-vs-personalized-workout-plan",
+    "title": "تفاوت برنامه تمرینی آماده با برنامه اختصاصی",
+    "url": "https://fitplusapp.com/ready-vs-personalized-workout-plan/",
+    "category": 38
+  },
+  {
+    "slug": "home-workout-plan-for-beginners",
+    "title": "برنامه ورزشی در خانه برای مبتدی‌ها",
+    "url": "https://fitplusapp.com/home-workout-plan-for-beginners/",
+    "category": 38
+  },
+  {
+    "slug": "weight-loss-meal-plan",
+    "title": "برنامه غذایی برای کاهش وزن",
+    "url": "https://fitplusapp.com/weight-loss-meal-plan/",
+    "category": 48
+  },
+  {
+    "slug": "mushroom-benefits-bodybuilding-weight-loss",
+    "title": "فواید قارچ در بدنسازی و لاغری",
+    "url": "https://fitplusapp.com/mushroom-benefits-bodybuilding-weight-loss/",
+    "category": 1
+  },
+  {
+    "slug": "exercise-to-stay-young",
+    "title": "با ورزش کردن، جوان بمانید",
+    "url": "https://fitplusapp.com/exercise-to-stay-young/",
+    "category": 1
+  },
+  {
+    "slug": "broccoli-benefits-weight-loss",
+    "title": "خواص بروکلی در لاغری",
+    "url": "https://fitplusapp.com/broccoli-benefits-weight-loss/",
+    "category": 1
+  },
+  {
+    "slug": "belly-and-love-handles-fat-loss-exercises",
+    "title": "ورزش برای کاهش شکم و پهلو؛ بهترین حرکات و برنامه هفتگی",
+    "url": "https://fitplusapp.com/belly-and-love-handles-fat-loss-exercises/",
+    "category": 38
+  },
+  {
+    "slug": "how-many-days-a-week-to-workout",
+    "title": "چند روز در هفته ورزش کنیم؟ راهنمای کامل بر اساس هدف",
+    "url": "https://fitplusapp.com/how-many-days-a-week-to-workout/",
+    "category": 38
+  },
+  {
+    "slug": "daily-calorie-needs",
+    "title": "کالری مورد نیاز روزانه؛ روش محاسبه دقیق و جدول ضریب فعالیت",
+    "url": "https://fitplusapp.com/daily-calorie-needs/",
+    "category": 48
+  },
+  {
+    "slug": "protein-for-muscle-building",
+    "title": "پروتئین برای عضله‌سازی؛ مقدار روزانه، بهترین منابع و زمان مصرف",
+    "url": "https://fitplusapp.com/protein-for-muscle-building/",
+    "category": 48
+  },
+  {
+    "slug": "beginner-gym-workout-plan",
+    "title": "برنامه بدنسازی مبتدی در باشگاه؛ برنامه سه‌روزه فول‌بادی با جدول ست و تکرار",
+    "url": "https://fitplusapp.com/beginner-gym-workout-plan/",
+    "category": 38
+  },
+  {
+    "slug": "walking-for-weight-loss",
+    "title": "پیاده‌روی برای لاغری؛ روزی چقدر راه برویم و برنامه هفتگی",
+    "url": "https://fitplusapp.com/walking-for-weight-loss/",
+    "category": 38
+  },
+  {
+    "slug": "healthy-diet-snacks",
+    "title": "میان‌وعده سالم برای رژیم؛ بهترین گزینه‌ها، کالری و نکات مهم",
+    "url": "https://fitplusapp.com/healthy-diet-snacks/",
+    "category": 48
+  }
 ]
