@@ -64,13 +64,13 @@ def render(out, title, hl, tag, photo):
 h1{margin:0;color:#fff;font-weight:900;font-size:%(sz)dpx;line-height:1.35;text-shadow:0 6px 24px rgba(0,0,0,.45)}
 h1 em{font-style:normal;color:#D7FF3A}
 .bar{position:absolute;right:56px;left:56px;bottom:56px;height:96px;border-radius:30px;display:flex;align-items:center;
- justify-content:space-between;padding:0 38px;color:#fff;font-weight:700;font-size:31px;
+ justify-content:center;padding:0 38px;color:#fff;font-weight:900;font-size:34px;
  background:rgba(255,255,255,.14);backdrop-filter:blur(22px);border:1.5px solid rgba(255,255,255,.3)}
 .id{direction:ltr;font-weight:900;color:#D7FF3A}
 </style></head><body><div class="st"><div class="ph"></div><div class="sh"></div>
 <div class="top"><span class="brand"><img src="file://%(logo)s">فیت‌پلاس</span><span class="pill">%(tag)s</span></div>
 <div class="card"><h1>%(head)s</h1></div>
-<div class="bar"><span>نصب رایگان از کافه‌بازار و مایکت</span><span class="id">@fitplusapp</span></div>
+<div class="bar"><span>نصب رایگان از کافه‌بازار و مایکت</span></div>
 </div></body></html>""" % dict(f=FONTS, W=W, H=H, p=photo, sz=size, logo=logo, tag=html.escape(tag), head=head)
     tmp = out + '.html'
     open(tmp, 'w', encoding='utf-8').write(page)
