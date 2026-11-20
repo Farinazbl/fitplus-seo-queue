@@ -1,7 +1,60 @@
 {
- "hijab": ["hijab", "hijab woman", "muslim woman", "hijab sport", "hijab fitness", "hijab running", "hijab yoga", "muslim woman exercise"],
- "workout": ["man gym", "man dumbbell", "man weightlifting", "athlete man training"],
- "cardio": ["man running", "man walking park", "man cycling"],
- "recovery": ["man stretching", "man drinking water", "man sleeping"],
- "app": ["man smartphone", "man phone app"]
+ "hijab": [
+  "hijab",
+  "hijab woman",
+  "muslim woman",
+  "hijab sport",
+  "hijab fitness",
+  "hijab running",
+  "hijab yoga",
+  "muslim woman exercise"
+ ],
+ "workout": [
+  "man gym",
+  "man dumbbell",
+  "man weightlifting",
+  "athlete man training"
+ ],
+ "cardio": [
+  "man running",
+  "man walking park",
+  "man cycling"
+ ],
+ "recovery": [
+  "man stretching",
+  "man drinking water",
+  "man sleeping"
+ ],
+ "app": [
+  "man smartphone",
+  "man phone app"
+ ],
+ "grilled-chicken": [
+  "grilled chicken breast vegetables",
+  "roasted vegetables tray oven",
+  "chicken salad healthy meal",
+  "herbs spices cooking chicken",
+  "healthy dinner plate chicken"
+ ],
+ "healthy-fats": [
+  "avocado",
+  "walnuts almonds nuts",
+  "olive oil bottle",
+  "salmon fillet",
+  "chia seeds flax seeds bowl"
+ ],
+ "soup": [
+  "vegetable soup bowl",
+  "barley soup",
+  "chopped carrots celery vegetables",
+  "soup pot kitchen",
+  "cozy soup bread table"
+ ],
+ "pushup": [
+  "push up exercise",
+  "man doing push ups home",
+  "plank exercise floor",
+  "strength training bodyweight",
+  "fitness floor workout home"
+ ]
 }
